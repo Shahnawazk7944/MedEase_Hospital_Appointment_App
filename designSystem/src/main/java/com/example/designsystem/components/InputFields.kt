@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +58,7 @@ fun OutlinedInputField(
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.secondary
         )
 
         OutlinedTextField(
@@ -78,6 +80,10 @@ fun OutlinedInputField(
             maxLines = maxLines,
             minLines = minLines,
             colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedContainerColor = MaterialTheme.colorScheme.onBackground,
+                focusedTextColor = MaterialTheme.colorScheme.primary,
+                unfocusedTextColor = MaterialTheme.colorScheme.secondary,
                 unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 focusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -86,7 +92,7 @@ fun OutlinedInputField(
                 focusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 errorTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                unfocusedBorderColor = Color.Transparent,
                 disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 errorBorderColor = MaterialTheme.colorScheme.error,
