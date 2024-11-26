@@ -6,6 +6,6 @@ plugins {
     alias(libs.plugins.android.library) apply false
 
     alias(libs.plugins.google.gms.google.services) apply false
-    alias(libs.plugins.ksp.annotation.processor) apply false
-    alias(libs.plugins.hilt.android) apply false
+    alias(libs.plugins.ksp.annotation.processor) version libs.versions.kspAnnotationProcessor apply false
+    alias(libs.plugins.hilt.android) version libs.versions.hiltAndroid apply false
 }

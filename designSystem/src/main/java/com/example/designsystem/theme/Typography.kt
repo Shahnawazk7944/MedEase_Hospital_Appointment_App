@@ -15,6 +15,12 @@ private fun outfitFontFamily(): FontFamily = FontFamily(
 )
 
 @Composable
+private fun poppinsFontFamily(): FontFamily = FontFamily(
+    Font(Res.font.poppins_regular, weight = FontWeight.Normal),
+    Font(Res.font.poppins_bold, weight = FontWeight.Bold)
+)
+
+@Composable
 private fun interFontFamily(): FontFamily = FontFamily(
     Font(Res.font.inter_regular, weight = FontWeight.Normal)
 )
@@ -25,6 +31,7 @@ private val defaultTypography = Typography()
 internal fun medEaseTypography(): Typography {
     val outfitFontFamily = outfitFontFamily()
     val interFontFamily = interFontFamily()
+    val poppinsFontFamily = poppinsFontFamily()
 
     return Typography(
         displayLarge = defaultTypography.displayLarge.copy(
@@ -52,15 +59,15 @@ internal fun medEaseTypography(): Typography {
             fontWeight = FontWeight.Bold,
         ),
         titleLarge = defaultTypography.titleLarge.copy(
-            fontFamily = outfitFontFamily,
+            fontFamily = poppinsFontFamily,
             fontWeight = FontWeight.Bold,
         ),
         titleMedium = defaultTypography.titleMedium.copy(
-            fontFamily = outfitFontFamily,
+            fontFamily = poppinsFontFamily,
             fontWeight = FontWeight.Bold,
         ),
         titleSmall = defaultTypography.titleSmall.copy(
-            fontFamily = outfitFontFamily,
+            fontFamily = poppinsFontFamily,
             fontWeight = FontWeight.Bold,
         ),
         bodyLarge = defaultTypography.bodyLarge.copy(

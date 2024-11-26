@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 
     alias(libs.plugins.google.gms.google.services)
-    alias(libs.plugins.ksp.annotation.processor)
+    alias(libs.plugins.ksp.annotation.processor) version libs.versions.kspAnnotationProcessor
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlinSerialization)
 }
@@ -70,6 +70,9 @@ dependencies {
     //Coroutines and Serialization
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
+
+    //Extended Icons
+    implementation(libs.androidx.material.icons.extended.android)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
