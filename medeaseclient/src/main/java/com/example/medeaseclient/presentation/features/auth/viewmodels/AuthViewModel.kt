@@ -1,15 +1,17 @@
 package com.example.medeaseclient.presentation.features.auth.viewmodels
 
+import android.util.Log.e
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.medeaseclient.data.repository.ClientAuthRepository
 import com.example.medeaseclient.data.util.AuthValidator
+import com.example.medeaseclient.presentation.features.auth.utils.reset
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignInEvent
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignInStates
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignUpEvent
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignUpStates
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -18,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val validator: AuthValidator
+    private val validator: AuthValidator,
+    private val repository: ClientAuthRepository
 ) : ViewModel() {
 
     private val _signInState = MutableStateFlow(SignInStates())
@@ -31,7 +34,11 @@ class AuthViewModel @Inject constructor(
         when (event) {
             is AuthEvent.SignInRequest -> {
                 viewModelScope.launch {
-                    signInRequest(email = event.email, password = event.password,rememberMe = event.rememberMe)
+                    signInRequest(
+                        email = event.email,
+                        password = event.password,
+                        rememberMe = event.rememberMe
+                    )
                 }
             }
 
@@ -79,6 +86,14 @@ class AuthViewModel @Inject constructor(
                         rememberMe = event.newValue
                     )
                 }
+            }
+
+            is SignInEvent.IsAllFieldsCleared -> {
+                _signInState.update { it.reset() }
+            }
+
+            is SignInEvent.RemoveFailure -> {
+                _signInState.update { it.copy(failure = event.newValue) }
             }
         }
     }
@@ -165,13 +180,29 @@ class AuthViewModel @Inject constructor(
                     )
                 }
             }
+
+            is SignUpEvent.IsAllFieldsCleared -> {
+                _signInState.update { it.reset() }
+            }
+
+            is SignUpEvent.RemoveFailure -> {
+                _signInState.update { it.copy(failure = event.newValue) }
+            }
         }
     }
 
-    private suspend fun signInRequest(email: String, password: String,rememberMe: Boolean) {
+    private suspend fun signInRequest(email: String, password: String, rememberMe: Boolean) {
         _signInState.update { it.copy(loading = true) }
-        delay(3000)
-        _signInState.update { it.copy(loading = false) }
+        repository.clientSignIn(email, password, rememberMe).onRight { isSuccess ->
+            _signInState.update {
+                it.copy(
+                    loading = false,
+                    isSignInSuccess = isSuccess.authenticated
+                )
+            }
+        }.onLeft { failure ->
+            _signInState.update { it.copy(failure = failure, loading = false) }
+        }
     }
 
     private suspend fun signUpRequest(
@@ -184,8 +215,26 @@ class AuthViewModel @Inject constructor(
         rememberMe: Boolean
     ) {
         _signUpState.update { it.copy(loading = true) }
-        delay(3000)
-        _signUpState.update { it.copy(loading = false) }
-
+        repository.clientSignUp(
+            hospitalName = hospitalName,
+            hospitalCity = hospitalCity,
+            hospitalPinCode = hospitalPinCode,
+            hospitalEmail = hospitalEmail,
+            hospitalPhone = hospitalPhone,
+            password = hospitalPassword,
+            rememberMe = rememberMe
+        ).onRight { isSuccess ->
+            _signUpState.update {
+                it.copy(
+                    loading = false,
+                    isSignUpSuccess = isSuccess.authenticated
+                )
+            }
+        }.onLeft { failure ->
+            // e("ClientViewModel", "clientSignUp: $it")
+            e("ClientViewModel", "clientSignUp: ${signUpState.value.failure}")
+            _signUpState.update { it.copy(failure = failure, loading = false) }
+            e("ClientViewModel", "clientSignUp: ${signUpState.value.failure}")
+        }
     }
 }

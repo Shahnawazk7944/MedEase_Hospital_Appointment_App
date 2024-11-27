@@ -5,13 +5,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddLocation
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Password
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Pin
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
@@ -29,8 +27,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.designsystem.components.OutlinedInputField
 import com.example.designsystem.theme.spacing
-import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignUpEvent
-import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignUpStates
+import com.example.medease.presentation.features.auth.viewmodels.events.SignUpEvent
+import com.example.medease.presentation.features.auth.viewmodels.events.SignUpStates
 
 @Composable
 fun SignUpTextFields(
@@ -50,14 +48,14 @@ fun SignUpTextFields(
 
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
     OutlinedInputField(
-        value = state.hospitalName,
+        value = state.name,
         onChange = {
-            event(SignUpEvent.HospitalNameChanged(it))
+            event(SignUpEvent.NameChanged(it))
         },
-        label = "Hospital Name",
+        label = "Name",
         placeholder = {
             Text(
-                text = "City Hospital",
+                text = "Alex Smith",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -65,25 +63,25 @@ fun SignUpTextFields(
         modifier = Modifier.fillMaxWidth(),
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.MedicalServices,
-                contentDescription = "Hospital icon",
+                imageVector = Icons.Default.Person,
+                contentDescription = "person icon",
                 tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
-        error = state.hospitalNameError,
+        error = state.nameError,
         maxLines = 1
     )
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
     OutlinedInputField(
-        value = state.hospitalEmail,
+        value = state.email,
         onChange = {
-            event(SignUpEvent.HospitalEmailChanged(it))
+            event(SignUpEvent.EmailChanged(it))
         },
-        label = "Hospital Email",
+        label = "Email",
         placeholder = {
             Text(
-                text = "city@hospital.com",
+                text = "alex@gmail.com",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -97,16 +95,16 @@ fun SignUpTextFields(
                 modifier = Modifier.size(20.dp)
             )
         },
-        error = state.hospitalEmailError,
+        error = state.emailError,
         maxLines = 1
     )
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
     OutlinedInputField(
-        value = state.hospitalPhone,
+        value = state.phone,
         onChange = {
-            event(SignUpEvent.HospitalPhoneChanged(it))
+            event(SignUpEvent.PhoneChanged(it))
         },
-        label = "Hospital Phone",
+        label = "Phone",
         placeholder = {
             Text(
                 text = "+913001234567",
@@ -123,71 +121,19 @@ fun SignUpTextFields(
                 modifier = Modifier.size(20.dp)
             )
         },
-        error = state.hospitalPhoneError,
+        error = state.phoneError,
         maxLines = 1
     )
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
     OutlinedInputField(
-        value = state.hospitalCity,
+        value = state.password,
         onChange = {
-            event(SignUpEvent.HospitalCityChanged(it))
-        },
-        label = "Hospital City",
-        placeholder = {
-            Text(
-                text = "Mumbai",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
-            )
-        },
-        modifier = Modifier.fillMaxWidth(),
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.AddLocation,
-                contentDescription = "Location icon",
-                tint = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.size(20.dp)
-            )
-        },
-        error = state.hospitalCityError,
-        maxLines = 1
-    )
-    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-    OutlinedInputField(
-        value = state.hospitalPinCode,
-        onChange = {
-            event(SignUpEvent.HospitalPinCodeChanged(it))
-        },
-        label = "Hospital Pin Code",
-        placeholder = {
-            Text(
-                text = "400001",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
-            )
-        },
-        modifier = Modifier.fillMaxWidth(),
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Pin,
-                contentDescription = "PinCode icon",
-                tint = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.size(20.dp)
-            )
-        },
-        error = state.hospitalPinCodeError,
-        maxLines = 1
-    )
-    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-    OutlinedInputField(
-        value = state.hospitalPassword,
-        onChange = {
-            event(SignUpEvent.HospitalPasswordChanged(it))
+            event(SignUpEvent.PasswordChanged(it))
         },
         label = "Password",
         placeholder = {
             Text(
-                text = "City@123",
+                text = "Alex@123",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -212,19 +158,19 @@ fun SignUpTextFields(
             }
         },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        error = state.hospitalPasswordError,
+        error = state.passwordError,
         maxLines = 1
     )
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
     OutlinedInputField(
-        value = state.hospitalConfirmPassword,
+        value = state.confirmPassword,
         onChange = {
-            event(SignUpEvent.HospitalConfirmPasswordChanged(it))
+            event(SignUpEvent.ConfirmPasswordChanged(it))
         },
         label = "Confirm Password",
         placeholder = {
             Text(
-                text = "City@123",
+                text = "Alex@123",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -249,7 +195,7 @@ fun SignUpTextFields(
             }
         },
         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        error = state.hospitalConfirmPasswordError,
+        error = state.confirmPasswordError,
         maxLines = 1
     )
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
@@ -260,5 +206,4 @@ fun SignUpTextFields(
             event(SignUpEvent.RememberMeChanged(it))
         }
     )
-
 }
