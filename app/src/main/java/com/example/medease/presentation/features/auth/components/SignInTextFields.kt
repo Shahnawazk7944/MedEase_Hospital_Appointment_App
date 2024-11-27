@@ -24,8 +24,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.designsystem.components.OutlinedInputField
 import com.example.designsystem.theme.spacing
-import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignInEvent
-import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignInStates
+import com.example.medease.presentation.features.auth.viewmodels.events.SignInEvent
+import com.example.medease.presentation.features.auth.viewmodels.events.SignInStates
 
 @Composable
 fun SignInTextFields(
@@ -35,7 +35,8 @@ fun SignInTextFields(
     var passwordVisible by remember {
         mutableStateOf(false)
     }
-    val passwordTrailingIcon = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+    val passwordTrailingIcon =
+        if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
 
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
     OutlinedInputField(

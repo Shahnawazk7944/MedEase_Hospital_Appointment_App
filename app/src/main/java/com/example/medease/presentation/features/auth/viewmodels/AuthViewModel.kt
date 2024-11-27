@@ -1,7 +1,9 @@
 package com.example.medease.presentation.features.auth.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.medease.data.repository.UserAuthRepository
 import com.example.medease.data.util.AuthValidator
 import com.example.medease.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignInEvent
@@ -9,7 +11,6 @@ import com.example.medease.presentation.features.auth.viewmodels.events.SignInSt
 import com.example.medease.presentation.features.auth.viewmodels.events.SignUpEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignUpStates
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -18,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val validator: AuthValidator
+    private val validator: AuthValidator,
+    private val repository: UserAuthRepository
 ) : ViewModel() {
 
     private val _signInState = MutableStateFlow(SignInStates())
@@ -153,8 +155,11 @@ class AuthViewModel @Inject constructor(
 
     private suspend fun signInRequest(email: String, password: String, rememberMe: Boolean) {
         _signInState.update { it.copy(loading = true) }
-        delay(3000)
-        _signInState.update { it.copy(loading = false) }
+        repository.userSignIn(email, password, rememberMe).onRight { isSuccess ->
+            _signInState.update { it.copy(loading = false, isSignInSuccess = isSuccess.authenticated ) }
+        }.onLeft { failure ->
+            _signInState.update { it.copy(failure = failure, loading = false) }
+        }
     }
 
     private suspend fun signUpRequest(
@@ -165,8 +170,15 @@ class AuthViewModel @Inject constructor(
         rememberMe: Boolean
     ) {
         _signUpState.update { it.copy(loading = true) }
-        delay(3000)
-        _signUpState.update { it.copy(loading = false) }
-
+        repository.userSignUp(name, email, phone, password, rememberMe).onRight { isSuccess ->
+            _signUpState.update {
+                it.copy(
+                    loading = false,
+                    isSignUpSuccess = isSuccess.authenticated
+                )
+            }
+        }.onLeft {
+            _signUpState.update { it.copy(failure = it.failure, loading = false) }
+        }
     }
 }

@@ -26,7 +26,8 @@ fun MedEaseClientNavGraph(
                         }
                     }
                 },
-                onSuccessFullSignUp = { navController.navigate(ClientRoutes.HomeScreen) }
+                onSuccessFullSignUp = { navController.navigate(ClientRoutes.HomeScreen) },
+                onBackClick = {navController.navigateUp()}
             )
         }
         composable<ClientRoutes.SignInScreen> {

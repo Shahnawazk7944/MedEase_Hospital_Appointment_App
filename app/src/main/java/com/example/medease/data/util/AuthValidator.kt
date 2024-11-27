@@ -1,10 +1,6 @@
 package com.example.medease.data.util
 
-import android.R.attr.phoneNumber
 import android.util.Patterns
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.regex.Pattern
 
 data class ValidationError(val message: String)
 class AuthValidator {
@@ -27,6 +23,7 @@ class AuthValidator {
         }
         return null
     }
+
     fun validateEmail(email: String): ValidationError? {
         if (email.isBlank()) {
             return ValidationError(
@@ -40,6 +37,7 @@ class AuthValidator {
         }
         return null
     }
+
     fun validatePhoneNumber(phoneNumber: String): ValidationError? {
         if (phoneNumber.isBlank()) {
             return ValidationError(
@@ -92,6 +90,7 @@ class AuthValidator {
         }
         return null
     }
+
     fun validateConfirmPassword(password: String, confirmPassword: String): ValidationError? {
         if (confirmPassword.isBlank()) {
             return ValidationError(

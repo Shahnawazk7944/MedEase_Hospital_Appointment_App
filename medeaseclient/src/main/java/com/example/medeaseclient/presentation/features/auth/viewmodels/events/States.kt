@@ -1,5 +1,8 @@
 package com.example.medeaseclient.presentation.features.auth.viewmodels.events
 
+import com.example.medeaseclient.data.repository.SignInWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.SignupWithEmailAndPasswordFailure
+
 data class SignInStates(
     val email: String = "",
     val password: String = "",
@@ -7,7 +10,10 @@ data class SignInStates(
     val passwordError: String? = null,
     val loading: Boolean = false,
     val rememberMe: Boolean = false,
+    val isSignInSuccess: Boolean = false,
+    val failure: SignInWithEmailAndPasswordFailure? = null
 )
+
 data class SignUpStates(
     val hospitalName: String = "",
     val hospitalCity: String = "",
@@ -25,4 +31,6 @@ data class SignUpStates(
     val hospitalConfirmPasswordError: String? = null,
     val loading: Boolean = false,
     val rememberMe: Boolean = false,
+    val isSignUpSuccess: Boolean = false,
+    val failure: SignupWithEmailAndPasswordFailure? = null
 )

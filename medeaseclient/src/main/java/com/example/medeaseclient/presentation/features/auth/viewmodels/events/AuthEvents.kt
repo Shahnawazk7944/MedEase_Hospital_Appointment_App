@@ -1,5 +1,7 @@
 package com.example.medeaseclient.presentation.features.auth.viewmodels.events
 
+import com.example.medeaseclient.data.repository.SignInWithEmailAndPasswordFailure
+
 
 sealed class AuthEvent {
     data class SignUpRequest(
@@ -22,6 +24,8 @@ sealed class SignInEvent {
     data class EmailChanged(val newValue: String) : SignInEvent()
     data class PasswordChanged(val newValue: String) : SignInEvent()
     data class RememberMeChanged(val newValue: Boolean) : SignInEvent()
+    data class RemoveFailure(val newValue: SignInWithEmailAndPasswordFailure? = null) : SignInEvent()
+    data class IsAllFieldsCleared(val newValue: Boolean) : SignInEvent()
 }
 sealed class SignUpEvent {
     data class HospitalNameChanged(val newValue: String) : SignUpEvent()
@@ -32,5 +36,7 @@ sealed class SignUpEvent {
     data class HospitalPasswordChanged(val newValue: String) : SignUpEvent()
     data class HospitalConfirmPasswordChanged(val newValue: String) : SignUpEvent()
     data class RememberMeChanged(val newValue: Boolean) : SignUpEvent()
+    data class RemoveFailure(val newValue: SignInWithEmailAndPasswordFailure? = null) : SignUpEvent()
+    data class IsAllFieldsCleared(val newValue: Boolean) : SignUpEvent()
 }
 
