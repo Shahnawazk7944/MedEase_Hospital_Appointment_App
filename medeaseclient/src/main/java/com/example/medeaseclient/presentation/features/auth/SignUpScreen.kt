@@ -1,6 +1,5 @@
 package com.example.medeaseclient.presentation.features.auth
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,13 +12,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,11 +38,11 @@ import com.example.medeaseclient.presentation.features.auth.components.CustomTop
 import com.example.medeaseclient.presentation.features.auth.components.SignUpTextFields
 import com.example.medeaseclient.presentation.features.auth.utils.getSnackbarMessage
 import com.example.medeaseclient.presentation.features.auth.utils.isSignUpFormValid
-import com.example.medeaseclient.presentation.features.auth.utils.reset
 import com.example.medeaseclient.presentation.features.auth.viewmodels.AuthViewModel
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignUpEvent
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignUpStates
+import kotlinx.coroutines.delay
 
 /**
  * HospitalAdmin1@city.com - Admin1@123
@@ -54,7 +57,28 @@ fun SignUpScreen(
     onSuccessFullSignUp: () -> Unit,
     onBackClick: () -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
     val state by viewModel.signUpState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1 = state.isSignUpSuccess) {
+        if (state.isSignUpSuccess) {
+            viewModel.signUpEvent(SignUpEvent.ClearAllFields(true))
+            onSuccessFullSignUp.invoke()
+        }
+    }
+    LaunchedEffect(key1 = state.failure) {
+        if (state.failure != null) {
+            val errorMessage = getSnackbarMessage(state.failure)
+            snackbarHostState.showSnackbar(
+                message = errorMessage,
+                duration = SnackbarDuration.Short,
+                withDismissAction = true
+            )
+            delay(100)
+            viewModel.signUpEvent(SignUpEvent.RemoveFailure(null))
+        }
+    }
+
     SignUpContent(
         state = state,
         signUpRequest = {
@@ -73,38 +97,19 @@ fun SignUpScreen(
         signUpEvent = viewModel::signUpEvent,
         onSignInClick = onSignInClick,
         onBackClick = onBackClick,
-        onSuccessFullSignUp = onSuccessFullSignUp
+        snackbarHostState = snackbarHostState
     )
 }
 
 @Composable
 fun SignUpContent(
     state: SignUpStates,
+    snackbarHostState: SnackbarHostState,
     signUpRequest: () -> Unit,
     signUpEvent: (SignUpEvent) -> Unit,
     onSignInClick: () -> Unit,
     onBackClick: () -> Unit,
-    onSuccessFullSignUp: () -> Unit,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(key1 = state.failure, key2 = state.isSignUpSuccess) {
-        Log.d("launch","reached 1")
-        if (state.failure != null) {
-            val errorMessage = getSnackbarMessage(state.failure)
-            Log.d("launch","reached 2")
-            snackbarHostState.showSnackbar(
-                message = errorMessage,
-                duration = SnackbarDuration.Short
-            )
-            signUpEvent(SignUpEvent.RemoveFailure(null))
-            Log.d("launch","reached 3 ${state.failure}")
-        }
-        if (state.isSignUpSuccess) {
-            signUpEvent(SignUpEvent.IsAllFieldsCleared(true))
-            onSuccessFullSignUp.invoke()
-        }
-    }
-
     Scaffold(
         topBar = {
             CustomTopBar(
@@ -112,7 +117,17 @@ fun SignUpContent(
             )
         },
         snackbarHost = {
-            SnackbarHost(snackbarHostState)
+            SnackbarHost(
+                hostState = snackbarHostState,
+            ){
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                    snackbarData = it,
+                    actionColor = MaterialTheme.colorScheme.secondary,
+                    dismissActionContentColor = MaterialTheme.colorScheme.onSecondary
+                )
+            }
         },
         bottomBar = {
             Column(
@@ -175,7 +190,7 @@ fun SignUpContentPreview() {
             signUpEvent = TODO(),
             onSignInClick = TODO(),
             onBackClick = TODO(),
-            onSuccessFullSignUp = TODO()
+            snackbarHostState = TODO()
         )
     }
 }

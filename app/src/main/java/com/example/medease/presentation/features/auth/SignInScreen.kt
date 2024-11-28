@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -35,11 +36,11 @@ import com.example.medease.presentation.features.auth.components.CustomTopBar
 import com.example.medease.presentation.features.auth.components.SignInTextFields
 import com.example.medease.presentation.features.auth.utils.getSnackbarMessage
 import com.example.medease.presentation.features.auth.utils.isSignInFormValid
-import com.example.medease.presentation.features.auth.utils.reset
 import com.example.medease.presentation.features.auth.viewmodels.AuthViewModel
 import com.example.medease.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignInEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignInStates
+import kotlinx.coroutines.delay
 
 @Composable
 fun SignInScreen(
@@ -54,8 +55,29 @@ fun SignInScreen(
         }
     }
     val state by viewModel.signInState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(key1 = state.isSignInSuccess) {
+        if (state.isSignInSuccess) {
+            viewModel.signInEvent(SignInEvent.ClearAllFields(true))
+            onSuccessFullLogin.invoke()
+        }
+    }
+    LaunchedEffect(key1 = state.failure) {
+        if (state.failure != null) {
+            val errorMessage =
+                getSnackbarMessage(state.failure)
+            snackbarHostState.showSnackbar(
+                message = errorMessage,
+                duration = SnackbarDuration.Short,
+                withDismissAction = true
+            )
+            delay(100)
+            viewModel.signInEvent(SignInEvent.RemoveFailure(null))
+        }
+    }
     SignInContent(
         state = state,
+        snackbarHostState = snackbarHostState,
         signInRequest = {
             viewModel.authEvent(
                 AuthEvent.SignInRequest(
@@ -64,10 +86,6 @@ fun SignInScreen(
                     rememberMe = state.rememberMe
                 )
             )
-            if (state.isSignInSuccess) {
-                state.reset()
-                onSuccessFullLogin.invoke()
-            }
         },
         signInEvent = viewModel::signInEvent,
         onSignUpClick = onSignUpClick,
@@ -82,21 +100,12 @@ fun SignInScreen(
 @Composable
 fun SignInContent(
     state: SignInStates,
+    snackbarHostState: SnackbarHostState,
     signInRequest: () -> Unit,
     signInEvent: (SignInEvent) -> Unit,
     onSignUpClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    if (state.failure != null) {
-        LaunchedEffect(key1 = state.failure) {
-            val errorMessage = getSnackbarMessage(state.failure)
-            snackbarHostState.showSnackbar(
-                message = errorMessage,
-                duration = SnackbarDuration.Short
-            )
-        }
-    }
     Scaffold(
         topBar = {
             CustomTopBar(
@@ -104,8 +113,18 @@ fun SignInContent(
             )
         },
         snackbarHost = {
-            SnackbarHost(snackbarHostState)
-        }
+            SnackbarHost(
+                hostState = snackbarHostState,
+            ) {
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                    snackbarData = it,
+                    actionColor = MaterialTheme.colorScheme.secondary,
+                    dismissActionContentColor = MaterialTheme.colorScheme.onSecondary
+                )
+            }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -158,7 +177,8 @@ fun SignInContentPreview() {
             signInRequest = {},
             signInEvent = {},
             onSignUpClick = {},
-            onBackClick = TODO()
+            onBackClick = TODO(),
+            snackbarHostState = TODO()
         )
     }
 }
