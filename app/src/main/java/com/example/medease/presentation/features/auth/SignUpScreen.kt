@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -38,6 +39,7 @@ import com.example.medease.presentation.features.auth.viewmodels.AuthViewModel
 import com.example.medease.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignUpEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignUpStates
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -54,8 +56,28 @@ fun SignUpScreen(
     onBackClick: () -> Unit
 ) {
     val state by viewModel.signUpState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(key1 = state.isSignUpSuccess) {
+        if (state.isSignUpSuccess) {
+            viewModel.signUpEvent(SignUpEvent.ClearAllFields(true))
+            onSuccessFullSignUp.invoke()
+        }
+    }
+    LaunchedEffect(key1 = state.failure) {
+        if (state.failure != null) {
+            val errorMessage = getSnackbarMessage(state.failure)
+            snackbarHostState.showSnackbar(
+                message = errorMessage,
+                duration = SnackbarDuration.Short,
+                withDismissAction = true
+            )
+            delay(100)
+            viewModel.signUpEvent(SignUpEvent.RemoveFailure(null))
+        }
+    }
     SignUpContent(
         state = state,
+        snackbarHostState = snackbarHostState,
         signUpRequest = {
             viewModel.viewModelScope.launch {
                 viewModel.authEvent(
@@ -67,10 +89,6 @@ fun SignUpScreen(
                         rememberMe = state.rememberMe
                     )
                 )
-                if (state.isSignUpSuccess) {
-                    state.reset()
-                    onSuccessFullSignUp.invoke()
-                }
             }
         },
         signUpEvent = viewModel::signUpEvent,
@@ -82,21 +100,12 @@ fun SignUpScreen(
 @Composable
 fun SignUpContent(
     state: SignUpStates,
+    snackbarHostState: SnackbarHostState,
     signUpRequest: () -> Unit,
     signUpEvent: (SignUpEvent) -> Unit,
     onSignInClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    if (state.failure != null) {
-        LaunchedEffect(key1 = state.failure) {
-            val errorMessage = getSnackbarMessage(state.failure)
-            snackbarHostState.showSnackbar(
-                message = errorMessage,
-                duration = SnackbarDuration.Short
-            )
-        }
-    }
     Scaffold(
         topBar = {
             CustomTopBar(
@@ -104,8 +113,18 @@ fun SignUpContent(
             )
         },
         snackbarHost = {
-            SnackbarHost(snackbarHostState)
-        }
+            SnackbarHost(
+                hostState = snackbarHostState,
+            ){
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                    snackbarData = it,
+                    actionColor = MaterialTheme.colorScheme.secondary,
+                    dismissActionContentColor = MaterialTheme.colorScheme.onSecondary
+                )
+            }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -157,7 +176,8 @@ fun SignUpContentPreview() {
             signUpRequest = {},
             signUpEvent = TODO(),
             onSignInClick = TODO(),
-            onBackClick = TODO()
+            snackbarHostState = TODO(),
+            onBackClick = TODO(),
         )
     }
 }

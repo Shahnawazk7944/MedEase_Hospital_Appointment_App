@@ -1,10 +1,10 @@
 package com.example.medease.presentation.features.auth.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medease.data.repository.UserAuthRepository
 import com.example.medease.data.util.AuthValidator
+import com.example.medease.presentation.features.auth.utils.reset
 import com.example.medease.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignInEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignInStates
@@ -84,6 +84,14 @@ class AuthViewModel @Inject constructor(
                     )
                 }
             }
+
+            is SignInEvent.ClearAllFields -> {
+                _signInState.update { it.reset() }
+            }
+
+            is SignInEvent.RemoveFailure -> {
+                _signInState.update { it.copy(failure = event.newValue) }
+            }
         }
     }
 
@@ -150,14 +158,28 @@ class AuthViewModel @Inject constructor(
                     )
                 }
             }
+
+            is SignUpEvent.ClearAllFields -> {
+                _signUpState.update { it.reset() }
+            }
+
+            is SignUpEvent.RemoveFailure -> {
+                _signUpState.update { it.copy(failure = event.newValue) }
+            }
         }
     }
 
     private suspend fun signInRequest(email: String, password: String, rememberMe: Boolean) {
         _signInState.update { it.copy(loading = true) }
-        repository.userSignIn(email, password, rememberMe).onRight { isSuccess ->
-            _signInState.update { it.copy(loading = false, isSignInSuccess = isSuccess.authenticated ) }
-        }.onLeft { failure ->
+        repository.userSignIn(email = email, password = password, rememberMe = rememberMe)
+            .onRight { isSuccess ->
+                _signInState.update {
+                    it.copy(
+                        loading = false,
+                        isSignInSuccess = isSuccess.authenticated
+                    )
+                }
+            }.onLeft { failure ->
             _signInState.update { it.copy(failure = failure, loading = false) }
         }
     }
@@ -170,7 +192,13 @@ class AuthViewModel @Inject constructor(
         rememberMe: Boolean
     ) {
         _signUpState.update { it.copy(loading = true) }
-        repository.userSignUp(name, email, phone, password, rememberMe).onRight { isSuccess ->
+        repository.userSignUp(
+            name = name,
+            email = email,
+            phone = phone,
+            password = password,
+            rememberMe = rememberMe
+        ).onRight { isSuccess ->
             _signUpState.update {
                 it.copy(
                     loading = false,

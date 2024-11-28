@@ -88,7 +88,7 @@ class AuthViewModel @Inject constructor(
                 }
             }
 
-            is SignInEvent.IsAllFieldsCleared -> {
+            is SignInEvent.ClearAllFields -> {
                 _signInState.update { it.reset() }
             }
 
@@ -181,12 +181,12 @@ class AuthViewModel @Inject constructor(
                 }
             }
 
-            is SignUpEvent.IsAllFieldsCleared -> {
-                _signInState.update { it.reset() }
+            is SignUpEvent.ClearAllFields -> {
+                _signUpState.update { it.reset() }
             }
 
             is SignUpEvent.RemoveFailure -> {
-                _signInState.update { it.copy(failure = event.newValue) }
+                _signUpState.update { it.copy(failure = event.newValue) }
             }
         }
     }
@@ -231,10 +231,7 @@ class AuthViewModel @Inject constructor(
                 )
             }
         }.onLeft { failure ->
-            // e("ClientViewModel", "clientSignUp: $it")
-            e("ClientViewModel", "clientSignUp: ${signUpState.value.failure}")
             _signUpState.update { it.copy(failure = failure, loading = false) }
-            e("ClientViewModel", "clientSignUp: ${signUpState.value.failure}")
         }
     }
 }
