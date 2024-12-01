@@ -1,4 +1,4 @@
-package com.example.medeaseclient.data.repository
+package com.example.medeaseclient.data.repository.auth
 
 import android.util.Log
 import androidx.datastore.core.DataStore
@@ -8,10 +8,13 @@ import arrow.core.Either
 import com.example.medeaseclient.data.firebase.FirebaseWrapper
 import com.example.medeaseclient.data.util.HOSPITALS_COLLECTION
 import com.example.medeaseclient.data.util.PreferencesKeys
+import com.example.medeaseclient.domain.model.ClientProfile
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -31,7 +34,6 @@ class ClientAuthRepositoryImpl @Inject constructor(
         rememberMe: Boolean
     ): Either<SignupWithEmailAndPasswordFailure, AuthSuccess> {
         try {
-            Log.e("ClientAuthRepositoryImpl", "clientSignUp: $hospitalEmail $password")
             val authResult = auth.createUserWithEmailAndPassword(hospitalEmail, password).await()
             val user = authResult.user
             if (user != null) {
@@ -41,16 +43,15 @@ class ClientAuthRepositoryImpl @Inject constructor(
                     hospitalPhone,
                     hospitalCity,
                     hospitalPinCode,
-                    user.photoUrl.toString()
                 )
                 firestore.collection(HOSPITALS_COLLECTION).document(user.uid).set(clientProfile).await()
-                if (rememberMe) saveRememberMe(true, user.uid)
+                if (rememberMe) saveRememberMe(true)
+                saveClientId(user.uid)
                 return Either.Right(AuthSuccess(authenticated = true))
             } else {
                 return Either.Left(SignupWithEmailAndPasswordFailure.UnknownError(Exception("User is null")))
             }
         } catch (e: FirebaseAuthException) {
-            Log.e("ClientAuthRepositoryImpl", "clientSignUp: ${e.message}")
             val failure = when (e) {
                 is FirebaseAuthWeakPasswordException -> SignupWithEmailAndPasswordFailure.WeakPassword
                 is FirebaseAuthInvalidCredentialsException -> SignupWithEmailAndPasswordFailure.InvalidEmail
@@ -58,6 +59,8 @@ class ClientAuthRepositoryImpl @Inject constructor(
                 else -> SignupWithEmailAndPasswordFailure.UnknownError(e)
             }
             return Either.Left(failure)
+        } catch (e: FirebaseNetworkException){
+            return Either.Left(SignupWithEmailAndPasswordFailure.NetworkError)
         }
     }
 
@@ -70,8 +73,15 @@ class ClientAuthRepositoryImpl @Inject constructor(
             val authResult = auth.signInWithEmailAndPassword(email, password).await()
             val user = authResult.user
             if (user != null) {
-                if (rememberMe) saveRememberMe(true, user.uid)
-                return Either.Right(AuthSuccess(authenticated = true))
+                val userDocRef = firestore.collection(HOSPITALS_COLLECTION).document(user.uid)
+                val userDocSnapshot = userDocRef.get().await()
+                if (userDocSnapshot.exists()) {
+                    if (rememberMe) saveRememberMe(true)
+                    saveClientId(user.uid)
+                    return Either.Right(AuthSuccess(authenticated = true))
+                } else {
+                    return Either.Left(SignInWithEmailAndPasswordFailure.InvalidCredentials)
+                }
             } else {
                 return Either.Left(SignInWithEmailAndPasswordFailure.InvalidCredentials)
             }
@@ -82,23 +92,18 @@ class ClientAuthRepositoryImpl @Inject constructor(
                 else -> SignInWithEmailAndPasswordFailure.UnknownError(e)
             }
             return Either.Left(failure)
+        } catch (e: FirebaseNetworkException){
+            return Either.Left(SignInWithEmailAndPasswordFailure.NetworkError)
         }
     }
-
-    override suspend fun logout(): Either<LogoutFailure, AuthSuccess> {
-        try {
-            auth.signOut()
-            saveRememberMe(false)
-            return Either.Right(AuthSuccess(authenticated = false))
-        } catch (e: Exception) {
-            return Either.Left(LogoutFailure.UnknownError(e))
-        }
-    }
-
-    private suspend fun saveRememberMe(rememberMe: Boolean, userId: String? = null) {
+    private suspend fun saveRememberMe(rememberMe: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.CLIENT_REMEMBER_ME] = rememberMe
-            userId?.let { preferences[PreferencesKeys.CLIENT_ID] = it }
+        }
+    }
+    private suspend fun saveClientId(clientId: String? = null) {
+        dataStore.edit { preferences ->
+            clientId?.let { preferences[PreferencesKeys.CLIENT_ID] = it }
         }
     }
 }

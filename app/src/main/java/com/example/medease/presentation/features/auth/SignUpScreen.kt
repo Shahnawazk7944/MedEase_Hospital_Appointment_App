@@ -29,17 +29,15 @@ import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
 import com.example.medease.presentation.features.auth.components.AuthBottomActions
-import com.example.medease.presentation.features.auth.components.AuthHeadings
-import com.example.medease.presentation.features.auth.components.CustomTopBar
+import com.example.medease.presentation.features.common.AuthHeadings
+import com.example.medease.presentation.features.common.CustomTopBar
 import com.example.medease.presentation.features.auth.components.SignUpTextFields
-import com.example.medease.presentation.features.auth.utils.getSnackbarMessage
+import com.example.medease.presentation.features.common.getSnackbarMessage
 import com.example.medease.presentation.features.auth.utils.isSignUpFormValid
-import com.example.medease.presentation.features.auth.utils.reset
 import com.example.medease.presentation.features.auth.viewmodels.AuthViewModel
 import com.example.medease.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignUpEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignUpStates
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -55,8 +53,8 @@ fun SignUpScreen(
     onSuccessFullSignUp: () -> Unit,
     onBackClick: () -> Unit
 ) {
-    val state by viewModel.signUpState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val state by viewModel.signUpState.collectAsStateWithLifecycle()
     LaunchedEffect(key1 = state.isSignUpSuccess) {
         if (state.isSignUpSuccess) {
             viewModel.signUpEvent(SignUpEvent.ClearAllFields(true))
@@ -71,7 +69,6 @@ fun SignUpScreen(
                 duration = SnackbarDuration.Short,
                 withDismissAction = true
             )
-            delay(100)
             viewModel.signUpEvent(SignUpEvent.RemoveFailure(null))
         }
     }
@@ -121,7 +118,7 @@ fun SignUpContent(
                     contentColor = MaterialTheme.colorScheme.onError,
                     snackbarData = it,
                     actionColor = MaterialTheme.colorScheme.secondary,
-                    dismissActionContentColor = MaterialTheme.colorScheme.onSecondary
+                    dismissActionContentColor = MaterialTheme.colorScheme.secondary
                 )
             }
         },

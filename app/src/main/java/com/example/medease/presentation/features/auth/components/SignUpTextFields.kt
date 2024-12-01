@@ -57,7 +57,6 @@ fun SignUpTextFields(
             Text(
                 text = "Alex Smith",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -65,7 +64,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = "person icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -83,7 +81,6 @@ fun SignUpTextFields(
             Text(
                 text = "alex@gmail.com",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -91,7 +88,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.Email,
                 contentDescription = "Email icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -109,7 +105,6 @@ fun SignUpTextFields(
             Text(
                 text = "+913001234567",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -117,7 +112,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.Phone,
                 contentDescription = "Phone icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -135,7 +129,6 @@ fun SignUpTextFields(
             Text(
                 text = "Alex@123",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -143,7 +136,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.Password,
                 contentDescription = "password icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -152,7 +144,6 @@ fun SignUpTextFields(
                 Icon(
                     imageVector = passwordTrailingIcon,
                     contentDescription = "eye icon",
-                    tint = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -172,7 +163,6 @@ fun SignUpTextFields(
             Text(
                 text = "Alex@123",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -180,7 +170,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.ConfirmationNumber,
                 contentDescription = "Password icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -189,7 +178,6 @@ fun SignUpTextFields(
                 Icon(
                     imageVector = confirmPasswordTrailingIcon,
                     contentDescription = "eye icon",
-                    tint = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.size(20.dp)
                 )
             }

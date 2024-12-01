@@ -1,7 +1,7 @@
 package com.example.medeaseclient.presentation.features.auth.viewmodels.events
 
-import com.example.medeaseclient.data.repository.SignInWithEmailAndPasswordFailure
-import com.example.medeaseclient.data.repository.SignupWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.auth.SignInWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.auth.SignupWithEmailAndPasswordFailure
 
 
 sealed class AuthEvent {

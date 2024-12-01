@@ -31,18 +31,15 @@ import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
 import com.example.medeaseclient.presentation.features.auth.components.AuthBottomActions
-import com.example.medeaseclient.presentation.features.auth.components.AuthHeadings
-import com.example.medeaseclient.presentation.features.auth.components.CustomTopBar
 import com.example.medeaseclient.presentation.features.auth.components.SignInTextFields
-import com.example.medeaseclient.presentation.features.auth.utils.getSnackbarMessage
 import com.example.medeaseclient.presentation.features.auth.utils.isSignInFormValid
-import com.example.medeaseclient.presentation.features.auth.utils.reset
 import com.example.medeaseclient.presentation.features.auth.viewmodels.AuthViewModel
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignInEvent
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignInStates
-import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignUpEvent
-import kotlinx.coroutines.delay
+import com.example.medeaseclient.presentation.features.common.AuthHeadings
+import com.example.medeaseclient.presentation.features.common.CustomTopBar
+import com.example.medeaseclient.presentation.features.common.getSnackbarMessage
 
 @Composable
 fun SignInScreen(
@@ -73,7 +70,6 @@ fun SignInScreen(
                 duration = SnackbarDuration.Short,
                 withDismissAction = true
             )
-            delay(100)
             viewModel.signInEvent(SignInEvent.RemoveFailure(null))
         }
     }
@@ -117,13 +113,13 @@ fun SignInContent(
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
-            ){
+            ) {
                 Snackbar(
                     containerColor = MaterialTheme.colorScheme.error,
                     contentColor = MaterialTheme.colorScheme.onError,
                     snackbarData = it,
                     actionColor = MaterialTheme.colorScheme.secondary,
-                    dismissActionContentColor = MaterialTheme.colorScheme.onSecondary
+                    dismissActionContentColor = MaterialTheme.colorScheme.secondary
                 )
             }
         },
@@ -182,6 +178,6 @@ fun SignInContentPreview() {
             snackbarHostState = TODO(),
             onBackClick = TODO(),
         )
-    
+
     }
 }

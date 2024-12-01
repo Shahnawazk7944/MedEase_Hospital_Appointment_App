@@ -1,75 +1,100 @@
-//package com.example.medease.presentation.viewmodels
-//
-//import android.util.Log
-//import androidx.lifecycle.ViewModel
-//import androidx.lifecycle.viewModelScope
-//import com.example.za_zoo_find_refreshments.domain.usecases.GetProductsUseCase
-//import com.example.za_zoo_find_refreshments.presentation.viewmodels.events.HomeEvent
-//import com.example.za_zoo_find_refreshments.presentation.viewmodels.events.ProductsState
-//import dagger.hilt.android.lifecycle.HiltViewModel
-//import kotlinx.coroutines.delay
-//import kotlinx.coroutines.flow.MutableStateFlow
-//import kotlinx.coroutines.flow.asStateFlow
-//import kotlinx.coroutines.flow.update
-//import kotlinx.coroutines.launch
-//import javax.inject.Inject
-//
-//@HiltViewModel
-//class HomeViewModel @Inject constructor(
-//    private val getProductsUseCase: GetProductsUseCase
-//) : ViewModel() {
-//
-//    private val _state = MutableStateFlow(ProductsState())
-//    val state = _state.asStateFlow()
-//
-//    init {
-//        getProducts(query = state.value.selectedProduct, location = state.value.selectedLocation)
-//    }
-//    fun onEvent(event: HomeEvent){
-//        when(event){
-//            is HomeEvent.FilterProducts -> {
-//                _state.update { it.copy(selectedProduct = event.query) }
-//                getProducts(query = event.query, location = state.value.selectedLocation)
-//            }
-//            is HomeEvent.ChangeLocation -> {
-//                _state.update { it.copy(selectedLocation = event.location) }
-//                getProducts(query = state.value.selectedProduct, location = event.location)
-//            }
-//            is HomeEvent.AddToCart -> {
-//                _state.update {
-//                    it.copy(
-//                        addToCart = it.addToCart.plus(event.cartItem)
-//                    )
-//                }
-//            }
-//
-//            is HomeEvent.AddProductImageToCart -> {
-//                _state.update {
-//                    it.copy(
-//                        cartItemImages = it.cartItemImages.plus(event.imageUrl)
-//                    )
-//                }
-//            }
-//        }
-//    }
-//    private fun getProducts(query: String, location: String) {
-//        viewModelScope.launch {
-//            _state.update { it.copy(loading = true) }
-//            getProductsUseCase.getProducts(query = query, location = location).onRight { products ->
-//                Log.d("check 1", "getProducts loading: ${state.value.loading}")
-//                delay(3000)
-//                _state.update {
-//                    it.copy(
-//                        products = products.detailResultsThisPage,
-//                        loading = false
-//                    )
-//                }
-//                Log.d("check", "getProducts loading: ${state.value.loading}")
-//                Log.d("check", "getProducts Name: ${state.value.products[0].name}")
-//            }.onLeft {
-//                _state.update { it.copy(error = it.error, loading = false) }
-//                Log.d("check", "getProducts Error: ${it.error}")
-//            }
-//        }
-//    }
-//}
+package com.example.medeaseclient.presentation.features.home.viewmodels
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.medeaseclient.data.repository.auth.ClientDataStoreRepository
+import com.example.medeaseclient.data.repository.home.ClientHomeRepository
+import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeEvents
+import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeStates
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val clientHomeRepository: ClientHomeRepository,
+    private val dataStoreRepository: ClientDataStoreRepository,
+) : ViewModel() {
+
+    private val _homeState = MutableStateFlow(HomeStates())
+    val homeState = _homeState.asStateFlow()
+
+    init {
+        homeEvents(HomeEvents.GetClientId)
+    }
+
+    fun homeEvents(event: HomeEvents) {
+        when (event) {
+            HomeEvents.OnLogoutClick -> {
+                viewModelScope.launch {
+                    logout()
+                }
+            }
+
+            is HomeEvents.RemoveFailure -> {
+                _homeState.update { it.copy(logoutFailure = event.failure) }
+            }
+
+            HomeEvents.GetClientId -> {
+                viewModelScope.launch {
+                    getClientId()
+                }
+            }
+
+            is HomeEvents.GetClientProfile -> {
+                viewModelScope.launch {
+                    getClientProfile(event.clientId)
+                }
+            }
+        }
+    }
+
+    private suspend fun logout() {
+        _homeState.update { it.copy(loggingOut = true) }
+        clientHomeRepository.logout().onRight { isSuccess ->
+            delay(7000)
+            _homeState.update {
+                it.copy(
+                    authenticated = isSuccess.authenticated,
+                    loggingOut = false
+                )
+            }
+        }.onLeft { failure ->
+            _homeState.update {
+                it.copy(
+                    loggingOut = false,
+                    logoutFailure = failure
+                )
+            }
+        }
+    }
+
+    private suspend fun getClientId() {
+        _homeState.update { it.copy(loading = true) }
+        dataStoreRepository.getClientId().onRight { userId ->
+            _homeState.update { it.copy(clientId = userId) }
+            homeEvents(HomeEvents.GetClientProfile(userId))
+            _homeState.update { it.copy(loading = false) }
+        }.onLeft { failure ->
+            _homeState.update { it.copy(loading = false, clientIdFailure = failure) }
+            delay(4000)
+            _homeState.update { it.copy(clientIdFailure = null) }
+            logout()
+        }
+    }
+
+    private suspend fun getClientProfile(clientId: String) {
+        _homeState.update { it.copy(loading = true) }
+        clientHomeRepository.getClientProfile(clientId).onRight { clientProfile ->
+            _homeState.update { it.copy(clientProfile = clientProfile, loading = false) }
+        }.onLeft { failure ->
+            _homeState.update { it.copy(loading = false, clientProfileFailure = failure) }
+            delay(4000)
+            _homeState.update { it.copy(clientProfileFailure = null) }
+        }
+    }
+}
