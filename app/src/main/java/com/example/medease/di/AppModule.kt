@@ -5,8 +5,12 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import com.example.medease.data.firebase.FirebaseWrapper
-import com.example.medease.data.repository.UserAuthRepository
-import com.example.medease.data.repository.UserAuthRepositoryImpl
+import com.example.medease.data.repository.auth.UserAuthRepository
+import com.example.medease.data.repository.auth.UserAuthRepositoryImpl
+import com.example.medease.data.repository.auth.UserDataStoreRepository
+import com.example.medease.data.repository.auth.UserDataStoreRepositoryImpl
+import com.example.medease.data.repository.home.UserHomeRepository
+import com.example.medease.data.repository.home.UserHomeRepositoryImpl
 import com.example.medease.data.util.AuthValidator
 import dagger.Module
 import dagger.Provides
@@ -39,6 +43,23 @@ object AppModule {
         dataStore: DataStore<Preferences>
     ): UserAuthRepository {
         return UserAuthRepositoryImpl(firebaseWrapper, dataStore)
+    }
+
+    @Singleton
+    @Provides
+    fun provideUserHomeRepository(
+        firebaseWrapper: FirebaseWrapper,
+        dataStore: DataStore<Preferences>
+    ): UserHomeRepository {
+        return UserHomeRepositoryImpl(firebaseWrapper, dataStore)
+    }
+
+    @Singleton
+    @Provides
+    fun provideClientDataStoreRepository(
+        dataStore: DataStore<Preferences>
+    ): UserDataStoreRepository {
+        return UserDataStoreRepositoryImpl(dataStore)
     }
 
     @Singleton

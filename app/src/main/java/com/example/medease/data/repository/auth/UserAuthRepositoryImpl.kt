@@ -1,12 +1,18 @@
-package com.example.medease.data.repository
+package com.example.medease.data.repository.auth
 
+import android.util.Log.e
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import arrow.core.Either
 import com.example.medease.data.firebase.FirebaseWrapper
+import com.example.medease.data.repository.home.LogoutFailure
 import com.example.medease.data.util.PreferencesKeys
+import com.example.medease.data.util.PreferencesKeys.USER_ID
+import com.example.medease.data.util.PreferencesKeys.USER_REMEMBER_ME
 import com.example.medease.data.util.USERS_COLLECTION
+import com.example.medease.domain.model.UserProfile
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -35,11 +41,11 @@ class UserAuthRepositoryImpl @Inject constructor(
                     name,
                     email,
                     phone,
-                    user.photoUrl.toString()
                 )
                 firestore.collection(USERS_COLLECTION).document(user.uid).set(clientProfile)
                     .await()
-                if (rememberMe) saveRememberMe(true, user.uid)
+                if (rememberMe) saveRememberMe(true)
+                saveUserId(user.uid)
                 return Either.Right(AuthSuccess(authenticated = true))
             } else {
                 return Either.Left(SignupWithEmailAndPasswordFailure.UnknownError(Exception("User is null")))
@@ -52,6 +58,8 @@ class UserAuthRepositoryImpl @Inject constructor(
                 else -> SignupWithEmailAndPasswordFailure.UnknownError(e)
             }
             return Either.Left(failure)
+        } catch (e: FirebaseNetworkException){
+            return Either.Left(SignupWithEmailAndPasswordFailure.NetworkError)
         }
     }
 
@@ -64,8 +72,15 @@ class UserAuthRepositoryImpl @Inject constructor(
             val authResult = auth.signInWithEmailAndPassword(email, password).await()
             val user = authResult.user
             if (user != null) {
-                if (rememberMe) saveRememberMe(true, user.uid)
-                return Either.Right(AuthSuccess(authenticated = true))
+                val userDocRef = firestore.collection(USERS_COLLECTION).document(user.uid)
+                val userDocSnapshot = userDocRef.get().await()
+                if (userDocSnapshot.exists()) {
+                    if (rememberMe) saveRememberMe(true)
+                    saveUserId(user.uid)
+                    return Either.Right(AuthSuccess(authenticated = true))
+                } else {
+                    return Either.Left(SignInWithEmailAndPasswordFailure.InvalidCredentials)
+                }
             } else {
                 return Either.Left(SignInWithEmailAndPasswordFailure.InvalidCredentials)
             }
@@ -75,23 +90,18 @@ class UserAuthRepositoryImpl @Inject constructor(
                 else -> SignInWithEmailAndPasswordFailure.UnknownError(e)
             }
             return Either.Left(failure)
+        } catch (e: FirebaseNetworkException){
+            return Either.Left(SignInWithEmailAndPasswordFailure.NetworkError)
         }
     }
-
-    override suspend fun logout(): Either<LogoutFailure, AuthSuccess> {
-        try {
-            auth.signOut()
-            saveRememberMe(false)
-            return Either.Right(AuthSuccess(authenticated = false))
-        } catch (e: Exception) {
-            return Either.Left(LogoutFailure.UnknownError(e))
-        }
-    }
-
-    private suspend fun saveRememberMe(rememberMe: Boolean, userId: String? = null) {
+    private suspend fun saveRememberMe(rememberMe: Boolean) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.USER_REMEMBER_ME] = rememberMe
-            userId?.let { preferences[PreferencesKeys.USER_ID] = it }
+            preferences[USER_REMEMBER_ME] = rememberMe
+        }
+    }
+    private suspend fun saveUserId(userId: String? = null) {
+        dataStore.edit { preferences ->
+            userId?.let { preferences[USER_ID] = it }
         }
     }
 }

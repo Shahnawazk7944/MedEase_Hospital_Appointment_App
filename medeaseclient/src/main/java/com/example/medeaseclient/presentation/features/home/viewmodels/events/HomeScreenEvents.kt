@@ -1,10 +1,11 @@
-//package com.example.za_zoo_find_refreshments.presentation.viewmodels.events
-//
-//import com.example.za_zoo_find_refreshments.domain.model.DetailResult
-//
-//sealed class HomeEvent {
-//    data class FilterProducts(val query: String): HomeEvent()
-//    data class AddProductImageToCart(val imageUrl: String): HomeEvent()
-//    data class ChangeLocation(val location: String): HomeEvent()
-//    data class AddToCart(val cartItem: DetailResult): HomeEvent()
-//}
+package com.example.medeaseclient.presentation.features.home.viewmodels.events
+
+import com.example.medeaseclient.data.repository.home.LogoutFailure
+
+
+sealed class HomeEvents {
+    object OnLogoutClick : HomeEvents()
+    data class RemoveFailure(val failure: LogoutFailure?) : HomeEvents()
+    data object GetClientId : HomeEvents()
+    data class GetClientProfile(val clientId: String) : HomeEvents()
+}

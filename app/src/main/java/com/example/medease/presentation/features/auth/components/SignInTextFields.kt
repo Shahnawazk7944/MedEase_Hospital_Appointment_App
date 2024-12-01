@@ -49,7 +49,6 @@ fun SignInTextFields(
             Text(
                 text = "AlexSmith@gmail.com",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -57,7 +56,6 @@ fun SignInTextFields(
             Icon(
                 imageVector = Icons.Default.Email,
                 contentDescription = "Email icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -75,7 +73,6 @@ fun SignInTextFields(
             Text(
                 text = "Alex123@",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -83,7 +80,6 @@ fun SignInTextFields(
             Icon(
                 imageVector = Icons.Default.Lock,
                 contentDescription = "Password icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -92,7 +88,6 @@ fun SignInTextFields(
                 Icon(
                     imageVector = passwordTrailingIcon,
                     contentDescription = "eye icon",
-                    tint = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.size(20.dp)
                 )
             }

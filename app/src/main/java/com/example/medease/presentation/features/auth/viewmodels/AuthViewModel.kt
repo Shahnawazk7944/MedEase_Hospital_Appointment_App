@@ -2,7 +2,7 @@ package com.example.medease.presentation.features.auth.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.medease.data.repository.UserAuthRepository
+import com.example.medease.data.repository.auth.UserAuthRepository
 import com.example.medease.data.util.AuthValidator
 import com.example.medease.presentation.features.auth.utils.reset
 import com.example.medease.presentation.features.auth.viewmodels.events.AuthEvent
@@ -205,8 +205,8 @@ class AuthViewModel @Inject constructor(
                     isSignUpSuccess = isSuccess.authenticated
                 )
             }
-        }.onLeft {
-            _signUpState.update { it.copy(failure = it.failure, loading = false) }
+        }.onLeft { failure ->
+            _signUpState.update { it.copy(failure = failure, loading = false) }
         }
     }
 }

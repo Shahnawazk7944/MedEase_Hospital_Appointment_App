@@ -35,14 +35,14 @@ internal val outlineVariantLight = Color(0xFFC4C7C8)
  * ------------------------------------------------------------------------------
  */
 
-internal val primaryDark = Color(0xFF5FD8C5)
-internal val onPrimaryDark = Color(0xFF00362D)
-internal val secondaryDark = Color(0xFF8E9AA3)
+internal val primaryDark = Color(0xFF85ADFF)
+internal val onPrimaryDark = Color(0xFFf0ffff)
+internal val secondaryDark = Color(0xFFFFFFFF)
 internal val onSecondaryDark = Color(0xFF1C2E38)
-internal val tertiaryDark = Color(0xFFA6C9FF)
-internal val onTertiaryDark = Color(0xFF00214F)
-internal val errorDark = Color(0xFFFFB4A9)
-internal val onErrorDark = Color(0xFF680003)
+internal val tertiaryDark = Color(0xFF3f000f)
+internal val onTertiaryDark = Color(0xFFffffbf)
+internal val errorDark = Color(0xFF680003)
+internal val onErrorDark = Color(0xFFFFB4A9)
 
 internal val primaryContainerDark = Color(0xFF005245)
 internal val onPrimaryContainerDark = Color(0xFF64BF3F)
@@ -53,14 +53,16 @@ internal val onTertiaryContainerDark = Color(0xFF85ADFF)
 internal val errorContainerDark = Color(0xFF930006)
 internal val onErrorContainerDark = Color(0xFFFF7A61)
 internal val backgroundDark = Color(0xFF1C2E38)
-internal val onBackgroundDark = Color(0xFFE3E2DD)
+internal val onBackgroundDark = Color(0xff2d4752)
 
 internal val surfaceDark = Color(0xFF191D23)
 internal val onSurfaceDark = Color(0xFFE3E2DD)
 internal val surfaceVariantDark = Color(0xFF48474F)
-internal val onSurfaceVariantDark = Color(0xFFC8C7CF)
+internal val onSurfaceVariantDark = Color(0xFFE3E2DD)
 internal val outlineDark = Color(0xFF8D9191)
 internal val outlineVariantDark = Color(0xFF48474F)
+
+
 
 ////=========================================================
 val Purple80 = Color(0xFFD0BCFF)
@@ -89,11 +91,5 @@ val PaleYellow = Color(0xFFffffbf)
 val AzureMist = Color(0xFFf0ffff)
 val Greenish = Color(0xFF43C7A3)
 
-//furniture App Colors
-
-val FPrimaryGreen = Color(0xFF0c8a7b)
-//val FPrimaryBackground = Color(0xFFedf6f9)
-val FPrimaryBackground = Color(0xFFf2f2f2)
-val FSecondaryBackgroundWhite = Color(0xFFffffff)
 val FPrice = Color(0xFFf48c06)
 val FRating = Color(0xFFffb703)

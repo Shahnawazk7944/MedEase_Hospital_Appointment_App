@@ -1,15 +1,17 @@
-//package com.example.za_zoo_find_refreshments.presentation.viewmodels.events
-//
-//import com.example.za_zoo_find_refreshments.domain.model.DetailResult
-//import com.example.za_zoo_find_refreshments.domain.model.Products
-//
-//data class ProductsState(
-//    val products: List<DetailResult> = emptyList(),
-//    val loading: Boolean = false,
-//    val selectedLocation: String = "McKinney",
-//    val selectedProduct: String = "Pizza",
-//    val addToCart: List<DetailResult> = emptyList(),
-//    val cartItemImages: List<String> = emptyList(),
-//    val productCategories:List<String> = listOf("Pizza", "Juice", "Coffee"),
-//    val error: String? = null
-//)
+package com.example.medeaseclient.presentation.features.home.viewmodels.events
+
+import com.example.medeaseclient.data.repository.auth.GetRememberMeAndIDPreferencesFailure
+import com.example.medeaseclient.data.repository.home.ClientProfileFailure
+import com.example.medeaseclient.data.repository.home.LogoutFailure
+import com.example.medeaseclient.domain.model.ClientProfile
+
+data class HomeStates(
+    val loading: Boolean = false,
+    val loggingOut: Boolean = false,
+    val logoutFailure: LogoutFailure? = null,
+    val authenticated: Boolean = true,
+    val clientId: String? = null,
+    val clientIdFailure: GetRememberMeAndIDPreferencesFailure? = null,
+    val clientProfile: ClientProfile? = null,
+    val clientProfileFailure: ClientProfileFailure? = null
+)

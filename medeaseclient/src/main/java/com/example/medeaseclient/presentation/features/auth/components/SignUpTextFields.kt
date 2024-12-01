@@ -57,9 +57,8 @@ fun SignUpTextFields(
         label = "Hospital Name",
         placeholder = {
             Text(
-                text = "City Hospital",
+                text = "City Care",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -67,7 +66,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.MedicalServices,
                 contentDescription = "Hospital icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -85,7 +83,6 @@ fun SignUpTextFields(
             Text(
                 text = "city@hospital.com",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -93,7 +90,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.Email,
                 contentDescription = "Email icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -111,7 +107,6 @@ fun SignUpTextFields(
             Text(
                 text = "+913001234567",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -119,7 +114,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.Phone,
                 contentDescription = "Phone icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -137,7 +131,6 @@ fun SignUpTextFields(
             Text(
                 text = "Mumbai",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -145,7 +138,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.AddLocation,
                 contentDescription = "Location icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -163,7 +155,6 @@ fun SignUpTextFields(
             Text(
                 text = "400001",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -171,7 +162,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.Pin,
                 contentDescription = "PinCode icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -189,7 +179,6 @@ fun SignUpTextFields(
             Text(
                 text = "City@123",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -197,7 +186,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.Password,
                 contentDescription = "password icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -206,7 +194,6 @@ fun SignUpTextFields(
                 Icon(
                     imageVector = passwordTrailingIcon,
                     contentDescription = "eye icon",
-                    tint = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -226,7 +213,6 @@ fun SignUpTextFields(
             Text(
                 text = "City@123",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -234,7 +220,6 @@ fun SignUpTextFields(
             Icon(
                 imageVector = Icons.Default.ConfirmationNumber,
                 contentDescription = "Password icon",
-                tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         },
@@ -243,7 +228,6 @@ fun SignUpTextFields(
                 Icon(
                     imageVector = confirmPasswordTrailingIcon,
                     contentDescription = "eye icon",
-                    tint = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.size(20.dp)
                 )
             }

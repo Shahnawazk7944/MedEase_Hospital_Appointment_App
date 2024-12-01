@@ -16,13 +16,10 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,16 +30,15 @@ import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
 import com.example.medeaseclient.presentation.features.auth.components.AuthBottomActions
-import com.example.medeaseclient.presentation.features.auth.components.AuthHeadings
-import com.example.medeaseclient.presentation.features.auth.components.CustomTopBar
+import com.example.medeaseclient.presentation.features.common.AuthHeadings
+import com.example.medeaseclient.presentation.features.common.CustomTopBar
 import com.example.medeaseclient.presentation.features.auth.components.SignUpTextFields
-import com.example.medeaseclient.presentation.features.auth.utils.getSnackbarMessage
+import com.example.medeaseclient.presentation.features.common.getSnackbarMessage
 import com.example.medeaseclient.presentation.features.auth.utils.isSignUpFormValid
 import com.example.medeaseclient.presentation.features.auth.viewmodels.AuthViewModel
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignUpEvent
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignUpStates
-import kotlinx.coroutines.delay
 
 /**
  * HospitalAdmin1@city.com - Admin1@123
@@ -74,7 +70,6 @@ fun SignUpScreen(
                 duration = SnackbarDuration.Short,
                 withDismissAction = true
             )
-            delay(100)
             viewModel.signUpEvent(SignUpEvent.RemoveFailure(null))
         }
     }
@@ -125,7 +120,7 @@ fun SignUpContent(
                     contentColor = MaterialTheme.colorScheme.onError,
                     snackbarData = it,
                     actionColor = MaterialTheme.colorScheme.secondary,
-                    dismissActionContentColor = MaterialTheme.colorScheme.onSecondary
+                    dismissActionContentColor = MaterialTheme.colorScheme.secondary
                 )
             }
         },

@@ -7,15 +7,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.medease.presentation.features.auth.SignInScreen
 import com.example.medease.presentation.features.auth.SignUpScreen
+import com.example.medease.presentation.features.home.HomeScreen
 
 
 @Composable
 fun MedEaseNavGraph(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    startDestination: Routes
 ) {
     NavHost(
         navController = navController,
-        startDestination = Routes.SignInScreen
+        startDestination = startDestination
     ) {
         composable<Routes.SignUpScreen> {
             SignUpScreen(
@@ -27,7 +29,7 @@ fun MedEaseNavGraph(
                     }
                 },
                 onSuccessFullSignUp = { navController.navigate(Routes.HomeScreen) },
-                onBackClick = {navController.navigateUp()}
+                onBackClick = { navController.navigateUp() }
             )
         }
         composable<Routes.SignInScreen> {
@@ -37,9 +39,16 @@ fun MedEaseNavGraph(
             )
         }
         composable<Routes.HomeScreen> {
-
+            HomeScreen(
+                onLogoutClick = {
+                    navController.navigate(Routes.SignInScreen) {
+                        popUpTo(Routes.SignInScreen) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
-
 
     }
 }
