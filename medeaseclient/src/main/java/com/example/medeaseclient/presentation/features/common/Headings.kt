@@ -51,17 +51,18 @@ fun HomeHeadings(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = heading,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.secondary,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            subHeading,
+            heading,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Normal,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
+        Text(
+            text = subHeading,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.secondary,
+            textAlign = TextAlign.Center,
+        )
+
     }
 }

@@ -2,18 +2,39 @@ package com.example.medeaseclient.presentation.features.home
 
 
 import android.app.Activity
-import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Bed
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.EventAvailable
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.MedicalInformation
+import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +43,7 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,16 +51,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
+import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
+import com.example.medeaseclient.domain.model.ClientProfile
 import com.example.medeaseclient.presentation.features.common.CustomTopBar
 import com.example.medeaseclient.presentation.features.common.HomeHeadings
-import com.example.medeaseclient.presentation.features.common.getSnackbarMessage
 import com.example.medeaseclient.presentation.features.common.LoadingDialog
+import com.example.medeaseclient.presentation.features.common.getSnackbarMessage
 import com.example.medeaseclient.presentation.features.home.viewmodels.HomeViewModel
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeEvents
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeStates
@@ -46,7 +75,8 @@ import com.example.medeaseclient.presentation.features.home.viewmodels.events.Ho
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    navController: NavHostController
 ) {
     val state by viewModel.homeState.collectAsStateWithLifecycle()
     val activity = (LocalContext.current as? Activity)
@@ -68,7 +98,7 @@ fun HomeScreen(
             viewModel.homeEvents(HomeEvents.RemoveFailure(null))
         }
     }
-    LaunchedEffect(key1 = state.clientIdFailure){
+    LaunchedEffect(key1 = state.clientIdFailure) {
         state.clientIdFailure?.let {
             val errorMessage = getSnackbarMessage(state.clientIdFailure)
             snackbarHostState.showSnackbar(
@@ -77,7 +107,7 @@ fun HomeScreen(
             )
         }
     }
-    LaunchedEffect(key1 = state.clientProfileFailure){
+    LaunchedEffect(key1 = state.clientProfileFailure) {
         state.clientProfileFailure?.let {
             val errorMessage = getSnackbarMessage(state.clientProfileFailure)
             snackbarHostState.showSnackbar(
@@ -104,6 +134,24 @@ fun HomeScreen(
         },
         onLogoutClick = {
             viewModel.homeEvents(HomeEvents.OnLogoutClick)
+        },
+        onMedicalOptionClick = {
+            when(it){
+                0 -> navController.navigate(ClientRoutes.DoctorScreen)
+                1 -> navController.navigate(ClientRoutes.DrugScreen)
+                2 -> navController.navigate(ClientRoutes.PrescriptionScreen)
+                3 -> navController.navigate(ClientRoutes.BedScreen)
+                4 -> navController.navigate(ClientRoutes.CheckUpScreen)
+                5 -> navController.navigate(ClientRoutes.CareScreen)
+                6 -> navController.navigate(ClientRoutes.EmergencyScreen)
+                7 -> navController.navigate(ClientRoutes.ProfileScreen(
+                    hospitalName = state.clientProfile?.hospitalName ?: "Unknown",
+                    hospitalEmail = state.clientProfile?.hospitalEmail ?: "Unknown",
+                    hospitalPhone = state.clientProfile?.hospitalPhone ?: "Unknown",
+                    hospitalCity = state.clientProfile?.hospitalCity ?: "Unknown",
+                    hospitalPinCode = state.clientProfile?.hospitalPinCode ?: "Unknown"
+                ))
+            }
         }
     )
 }
@@ -115,7 +163,8 @@ fun HomeContent(
     snackbarHostState: SnackbarHostState,
     event: (HomeEvents) -> Unit,
     onBackClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    onMedicalOptionClick: (Int) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -123,7 +172,7 @@ fun HomeContent(
                 onBackClick = { onBackClick.invoke() },
                 title = {
                     Text(
-                        text = "Home",
+                        text = "Hospital Home",
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Center,
                     )
@@ -133,7 +182,7 @@ fun HomeContent(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Logout,
                             contentDescription = "logout icon",
-                            tint = MaterialTheme.colorScheme.error,
+                            tint = MaterialTheme.colorScheme.errorContainer,
                             modifier = Modifier.size(25.dp)
                         )
                     }
@@ -162,42 +211,119 @@ fun HomeContent(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            val options = listOf(
+                "Doctor" to Icons.Default.LocalHospital,
+                "Appointments" to Icons.Default.Schedule,
+                "Prescription" to Icons.Default.Description,
+                "Beds" to Icons.Default.Bed,
+                "Check Up" to Icons.Default.EventAvailable,
+                "Care" to Icons.Default.Favorite,
+                "Emergency" to Icons.Default.LocalFireDepartment,
+                "Profile" to Icons.Default.MedicalInformation
+            )
             if (state.loggingOut || state.loading) {
                 LoadingDialog(true)
             }
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
             HomeHeadings(
-                heading = "Welcome to Center for Healing ${state.clientProfile?.hospitalName} Hospital",
-                subHeading = "All the data fetch from firebase"
+                heading = "Welcome to ${state.clientProfile?.hospitalName} Hospital",
+                subHeading = "Leading the way in healthcare"
             )
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
-            Text(
-                text = "Hospital Email : ${state.clientProfile?.hospitalEmail}",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.secondary,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
-            Text(
-                text = "Hospital Phone : ${state.clientProfile?.hospitalPhone}",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.secondary,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
-            Text(
-                text = "Hospital City : ${state.clientProfile?.hospitalCity}",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.secondary,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
-            Text(
-                text = "Hospital Pin Code : ${state.clientProfile?.hospitalPinCode}",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.secondary,
-                textAlign = TextAlign.Center,
-            )
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(MaterialTheme.spacing.large)),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 10.dp
+                )
+            ) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(4),
+                    modifier = Modifier
+                        .padding(MaterialTheme.spacing.medium)
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentPadding = PaddingValues(vertical = 6.dp, horizontal = 2.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    itemsIndexed(options) { index, option ->
+                        MedicalOptionItem(
+                            label = option.first,
+                            icon = option.second,
+                            onClick = { onMedicalOptionClick.invoke(index) }
+                        )
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+fun MedicalOptionItem(
+    label: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center
+        ) {
+            Surface(
+                onClick = onClick,
+                modifier = Modifier.size(60.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+                contentColor = MaterialTheme.colorScheme.onSecondary,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    tint = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier
+                        .padding(MaterialTheme.spacing.medium)
+                        .fillMaxSize()
+                )
+            }
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSecondary,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+fun HomeContentPreview() {
+    val state = HomeStates()
+    val snackbarHostState = SnackbarHostState()
+    val event: (HomeEvents) -> Unit = {}
+    val onBackClick: () -> Unit = {}
+    val onLogoutClick: () -> Unit = {}
+    MedEaseTheme {
+        HomeContent(
+            state = state,
+            snackbarHostState = snackbarHostState,
+            event = event,
+            onBackClick = onBackClick,
+            onLogoutClick = onLogoutClick,
+            onMedicalOptionClick = { }
+        )
     }
 }

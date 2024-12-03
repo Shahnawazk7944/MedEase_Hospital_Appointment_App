@@ -47,7 +47,7 @@ fun OutlinedInputField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
-    singleLine: Boolean = false,
+    singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     minLines: Int = 1,
 ) {
@@ -99,7 +99,7 @@ fun OutlinedInputField(
                 unfocusedBorderColor = Color.Transparent,
                 disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorBorderColor = MaterialTheme.colorScheme.errorContainer,
             )
         )
 
@@ -197,7 +197,7 @@ private fun InputFieldError(
             Text(
                 text = error,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.error,
+                color = MaterialTheme.colorScheme.errorContainer,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = MaterialTheme.spacing.small),
