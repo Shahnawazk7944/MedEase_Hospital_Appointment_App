@@ -38,7 +38,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideClientAuthRepository(
+    fun provideUserAuthRepository(
         firebaseWrapper: FirebaseWrapper,
         dataStore: DataStore<Preferences>
     ): UserAuthRepository {
@@ -56,7 +56,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideClientDataStoreRepository(
+    fun provideUserDataStoreRepository(
         dataStore: DataStore<Preferences>
     ): UserDataStoreRepository {
         return UserDataStoreRepositoryImpl(dataStore)
