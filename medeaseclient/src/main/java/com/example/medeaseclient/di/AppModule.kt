@@ -11,7 +11,7 @@ import com.example.medeaseclient.data.repository.auth.ClientDataStoreRepository
 import com.example.medeaseclient.data.repository.auth.ClientDataStoreRepositoryImpl
 import com.example.medeaseclient.data.repository.home.ClientHomeRepository
 import com.example.medeaseclient.data.repository.home.ClientHomeRepositoryImpl
-import com.example.medeaseclient.data.util.AuthValidator
+import com.example.medeaseclient.data.util.Validator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -63,7 +63,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideAuthValidator(): AuthValidator {
-        return AuthValidator()
+    fun provideAuthValidator(): Validator {
+        return Validator()
     }
 }

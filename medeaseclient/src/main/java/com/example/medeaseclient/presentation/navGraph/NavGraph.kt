@@ -10,6 +10,8 @@ import androidx.navigation.toRoute
 import com.example.medeaseclient.domain.model.ClientProfile
 import com.example.medeaseclient.presentation.features.auth.SignInScreen
 import com.example.medeaseclient.presentation.features.auth.SignUpScreen
+import com.example.medeaseclient.presentation.features.doctorsAndBeds.AddDoctorsScreen
+import com.example.medeaseclient.presentation.features.doctorsAndBeds.DoctorsScreen
 import com.example.medeaseclient.presentation.features.helper.CommingSoonScreen
 import com.example.medeaseclient.presentation.features.helper.HospitalProfileScreen
 import com.example.medeaseclient.presentation.features.home.HomeScreen
@@ -78,36 +80,12 @@ fun MedEaseClientNavGraph(
             )
         }
         composable<ClientRoutes.DoctorScreen> {
-            CommingSoonScreen(
-                onBackClick = { navController.navigateUp() }
-            )
+            DoctorsScreen(navController = navController)
         }
-        composable<ClientRoutes.DrugScreen> {
-            CommingSoonScreen(
-                onBackClick = { navController.navigateUp() }
-            )
-        }
-        composable<ClientRoutes.PrescriptionScreen> {
-            CommingSoonScreen(
-                onBackClick = { navController.navigateUp() }
-            )
+        composable<ClientRoutes.AddDoctorScreen> {
+            AddDoctorsScreen(navController = navController)
         }
         composable<ClientRoutes.BedScreen> {
-            CommingSoonScreen(
-                onBackClick = { navController.navigateUp() }
-            )
-        }
-        composable<ClientRoutes.CheckUpScreen> {
-            CommingSoonScreen(
-                onBackClick = { navController.navigateUp() }
-            )
-        }
-        composable<ClientRoutes.CareScreen> {
-            CommingSoonScreen(
-                onBackClick = { navController.navigateUp() }
-            )
-        }
-        composable<ClientRoutes.EmergencyScreen> {
             CommingSoonScreen(
                 onBackClick = { navController.navigateUp() }
             )

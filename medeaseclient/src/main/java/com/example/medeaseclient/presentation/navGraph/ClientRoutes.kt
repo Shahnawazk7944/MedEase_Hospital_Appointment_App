@@ -27,23 +27,11 @@ sealed class ClientRoutes {
 
     @Serializable
     object DoctorScreen : ClientRoutes()
-
     @Serializable
-    object DrugScreen : ClientRoutes()
+    object AddDoctorScreen : ClientRoutes()
 
-    @Serializable
-    object PrescriptionScreen : ClientRoutes()
 
     @Serializable
     object BedScreen : ClientRoutes()
-
-    @Serializable
-    object CheckUpScreen : ClientRoutes()
-
-    @Serializable
-    object CareScreen : ClientRoutes()
-
-    @Serializable
-    object EmergencyScreen : ClientRoutes()
 
 }
