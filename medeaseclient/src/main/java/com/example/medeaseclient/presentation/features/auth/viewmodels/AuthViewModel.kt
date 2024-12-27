@@ -2,7 +2,7 @@ package com.example.medeaseclient.presentation.features.auth.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.medeaseclient.data.repository.auth.ClientAuthRepository
+import com.example.medeaseclient.data.repository.doctor.ClientAuthRepository
 import com.example.medeaseclient.data.util.Validator
 import com.example.medeaseclient.presentation.features.auth.utils.reset
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.AuthEvent

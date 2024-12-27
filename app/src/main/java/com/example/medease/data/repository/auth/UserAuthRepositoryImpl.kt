@@ -38,6 +38,7 @@ class UserAuthRepositoryImpl @Inject constructor(
             val user = authResult.user
             if (user != null) {
                 val clientProfile = UserProfile(
+                    user.uid,
                     name,
                     email,
                     phone,

@@ -1,6 +1,9 @@
 package com.example.medeaseclient.data.repository.auth
 
 import arrow.core.Either
+import com.example.medeaseclient.data.repository.doctor.AuthSuccess
+import com.example.medeaseclient.data.repository.doctor.SignInWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.doctor.SignupWithEmailAndPasswordFailure
 
 interface ClientAuthRepository {
     suspend fun clientSignUp(

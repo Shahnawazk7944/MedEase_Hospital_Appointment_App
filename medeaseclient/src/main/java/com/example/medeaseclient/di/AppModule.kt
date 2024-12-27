@@ -9,6 +9,8 @@ import com.example.medeaseclient.data.repository.auth.ClientAuthRepository
 import com.example.medeaseclient.data.repository.auth.ClientAuthRepositoryImpl
 import com.example.medeaseclient.data.repository.auth.ClientDataStoreRepository
 import com.example.medeaseclient.data.repository.auth.ClientDataStoreRepositoryImpl
+import com.example.medeaseclient.data.repository.doctor.ClientDoctorRepository
+import com.example.medeaseclient.data.repository.doctor.ClientDoctorRepositoryImpl
 import com.example.medeaseclient.data.repository.home.ClientHomeRepository
 import com.example.medeaseclient.data.repository.home.ClientHomeRepositoryImpl
 import com.example.medeaseclient.data.util.Validator
@@ -38,6 +40,14 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideClientDoctorRepository(
+        firebaseWrapper: FirebaseWrapper,
+    ): ClientDoctorRepository {
+        return ClientDoctorRepositoryImpl(firebaseWrapper)
+    }
+
+    @Singleton
+    @Provides
     fun provideClientAuthRepository(
         firebaseWrapper: FirebaseWrapper,
         dataStore: DataStore<Preferences>
@@ -53,6 +63,7 @@ object AppModule {
     ): ClientHomeRepository {
         return ClientHomeRepositoryImpl(firebaseWrapper, dataStore)
     }
+
     @Singleton
     @Provides
     fun provideClientDataStoreRepository(
