@@ -1,8 +1,8 @@
 package com.example.medeaseclient.presentation.features.common
 
 import com.example.medeaseclient.data.repository.auth.GetRememberMeAndIDPreferencesFailure
-import com.example.medeaseclient.data.repository.auth.SignInWithEmailAndPasswordFailure
-import com.example.medeaseclient.data.repository.auth.SignupWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.doctor.SignInWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.doctor.SignupWithEmailAndPasswordFailure
 import com.example.medeaseclient.data.repository.home.ClientProfileFailure
 import com.example.medeaseclient.data.repository.home.LogoutFailure
 

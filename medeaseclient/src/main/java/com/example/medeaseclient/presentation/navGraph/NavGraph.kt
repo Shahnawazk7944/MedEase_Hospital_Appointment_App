@@ -1,17 +1,19 @@
 package com.example.medeaseclient.presentation.navGraph
 
+import ClientRoutes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.activity.viewModels
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.example.medeaseclient.domain.model.ClientProfile
 import com.example.medeaseclient.presentation.features.auth.SignInScreen
 import com.example.medeaseclient.presentation.features.auth.SignUpScreen
-import com.example.medeaseclient.presentation.features.auth.viewmodels.AuthViewModel
+import com.example.medeaseclient.presentation.features.doctorsAndBeds.AddDoctorsScreen
+import com.example.medeaseclient.presentation.features.doctorsAndBeds.DoctorsScreen
+import com.example.medeaseclient.presentation.features.helper.CommingSoonScreen
+import com.example.medeaseclient.presentation.features.helper.HospitalProfileScreen
 import com.example.medeaseclient.presentation.features.home.HomeScreen
 
 
@@ -45,16 +47,48 @@ fun MedEaseClientNavGraph(
         }
         composable<ClientRoutes.HomeScreen> {
             HomeScreen(
+                navController = navController,
                 onLogoutClick = {
                     navController.navigate(ClientRoutes.SignInScreen) {
                         popUpTo(ClientRoutes.SignInScreen) {
                             inclusive = true
                         }
                     }
-                }
+                },
             )
         }
-
-
+        composable<ClientRoutes.ProfileScreen> {
+            backStackEntry ->
+            val profile: ClientRoutes.ProfileScreen = backStackEntry.toRoute()
+            HospitalProfileScreen(
+                onLogoutClick = {
+                },
+                hospitalProfile = ClientProfile(
+                    hospitalName = profile.hospitalName,
+                    hospitalEmail = profile.hospitalEmail,
+                    hospitalPhone = profile.hospitalPhone,
+                    hospitalCity = profile.hospitalCity,
+                    hospitalPinCode = profile.hospitalPinCode
+                ),
+                onEditProfileClick = {},
+                onBackClick = { navController.navigateUp() },
+            )
+        }
+        composable<ClientRoutes.AppointmentScreen> {
+            CommingSoonScreen(
+                onBackClick = { navController.navigateUp() }
+            )
+        }
+        composable<ClientRoutes.DoctorScreen> {
+            DoctorsScreen(navController = navController)
+        }
+        composable<ClientRoutes.AddDoctorScreen> {
+            AddDoctorsScreen(navController = navController)
+        }
+        composable<ClientRoutes.BedScreen> {
+            CommingSoonScreen(
+                onBackClick = { navController.navigateUp() }
+            )
+        }
     }
 }

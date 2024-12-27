@@ -2,8 +2,8 @@ package com.example.medeaseclient.presentation.features.auth.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.medeaseclient.data.repository.auth.ClientAuthRepository
-import com.example.medeaseclient.data.util.AuthValidator
+import com.example.medeaseclient.data.repository.doctor.ClientAuthRepository
+import com.example.medeaseclient.data.util.Validator
 import com.example.medeaseclient.presentation.features.auth.utils.reset
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignInEvent
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val validator: AuthValidator,
+    private val validator: Validator,
     private val repository: ClientAuthRepository
 ) : ViewModel() {
 

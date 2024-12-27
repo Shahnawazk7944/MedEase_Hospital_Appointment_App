@@ -3,11 +3,9 @@ package com.example.medeaseclient.data.util
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 
-//const val DATABASE_NAME = "prod"
-//const val PROFILE_DATABASE_NAME = "userProfile"
-//const val PROFILE_COLLECTION = "profileList"
 
 const val HOSPITALS_COLLECTION = "hospitals"
+const val DOCTORS_COLLECTION = "doctors"
 
 
 object PreferencesKeys {

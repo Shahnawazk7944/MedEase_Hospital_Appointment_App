@@ -3,6 +3,7 @@ package com.example.designsystem.components
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,13 +39,14 @@ fun SelectDate(
                 onClick = {
                     datePickerState.selectedDateMillis?.let { onDateSelected(it.convertMillisToDate()) }
                     onDismiss()
-                }
+                },
             )
         },
         dismissButton = {
             SecondaryButton(
                 label = onDismissText,
-                onClick = { onDismiss.invoke() }
+                onClick = { onDismiss.invoke() },
+                colors= ButtonDefaults.outlinedButtonColors( contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         },
         content = {

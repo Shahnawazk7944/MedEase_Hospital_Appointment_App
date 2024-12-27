@@ -6,6 +6,10 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import arrow.core.Either
 import com.example.medeaseclient.data.firebase.FirebaseWrapper
+import com.example.medeaseclient.data.repository.doctor.AuthSuccess
+import com.example.medeaseclient.data.repository.doctor.ClientAuthRepository
+import com.example.medeaseclient.data.repository.doctor.SignInWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.doctor.SignupWithEmailAndPasswordFailure
 import com.example.medeaseclient.data.util.HOSPITALS_COLLECTION
 import com.example.medeaseclient.data.util.PreferencesKeys
 import com.example.medeaseclient.domain.model.ClientProfile
@@ -14,7 +18,6 @@ import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -38,13 +41,15 @@ class ClientAuthRepositoryImpl @Inject constructor(
             val user = authResult.user
             if (user != null) {
                 val clientProfile = ClientProfile(
+                    user.uid,
                     hospitalName,
                     hospitalEmail,
                     hospitalPhone,
                     hospitalCity,
                     hospitalPinCode,
                 )
-                firestore.collection(HOSPITALS_COLLECTION).document(user.uid).set(clientProfile).await()
+                firestore.collection(HOSPITALS_COLLECTION).document(user.uid).set(clientProfile)
+                    .await()
                 if (rememberMe) saveRememberMe(true)
                 saveClientId(user.uid)
                 return Either.Right(AuthSuccess(authenticated = true))
@@ -59,7 +64,7 @@ class ClientAuthRepositoryImpl @Inject constructor(
                 else -> SignupWithEmailAndPasswordFailure.UnknownError(e)
             }
             return Either.Left(failure)
-        } catch (e: FirebaseNetworkException){
+        } catch (e: FirebaseNetworkException) {
             return Either.Left(SignupWithEmailAndPasswordFailure.NetworkError)
         }
     }
@@ -92,15 +97,17 @@ class ClientAuthRepositoryImpl @Inject constructor(
                 else -> SignInWithEmailAndPasswordFailure.UnknownError(e)
             }
             return Either.Left(failure)
-        } catch (e: FirebaseNetworkException){
+        } catch (e: FirebaseNetworkException) {
             return Either.Left(SignInWithEmailAndPasswordFailure.NetworkError)
         }
     }
+
     private suspend fun saveRememberMe(rememberMe: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.CLIENT_REMEMBER_ME] = rememberMe
         }
     }
+
     private suspend fun saveClientId(clientId: String? = null) {
         dataStore.edit { preferences ->
             clientId?.let { preferences[PreferencesKeys.CLIENT_ID] = it }

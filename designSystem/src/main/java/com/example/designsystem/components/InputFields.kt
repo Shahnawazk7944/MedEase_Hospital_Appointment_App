@@ -47,7 +47,7 @@ fun OutlinedInputField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
-    singleLine: Boolean = false,
+    singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     minLines: Int = 1,
 ) {
@@ -99,7 +99,7 @@ fun OutlinedInputField(
                 unfocusedBorderColor = Color.Transparent,
                 disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorBorderColor = MaterialTheme.colorScheme.errorContainer,
             )
         )
 
@@ -129,6 +129,7 @@ fun OutlinedDateInputField(
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.secondary
         )
         OutlinedTextField(
             value = date,
@@ -145,18 +146,26 @@ fun OutlinedDateInputField(
             readOnly = true,
             visualTransformation = VisualTransformation.None,
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                focusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                errorLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                focusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                errorTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedContainerColor = MaterialTheme.colorScheme.onBackground,
+                focusedTextColor = MaterialTheme.colorScheme.secondary,
+                unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                unfocusedLeadingIconColor = MaterialTheme.colorScheme.outline,
+                focusedLeadingIconColor = MaterialTheme.colorScheme.outline,
+                disabledLeadingIconColor = MaterialTheme.colorScheme.outline,
+                errorLeadingIconColor = MaterialTheme.colorScheme.outline,
+                unfocusedTrailingIconColor = MaterialTheme.colorScheme.outline,
+                focusedTrailingIconColor = MaterialTheme.colorScheme.outline,
+                disabledTrailingIconColor = MaterialTheme.colorScheme.outline,
+                errorTrailingIconColor = MaterialTheme.colorScheme.outline,
+                focusedPlaceholderColor =MaterialTheme.colorScheme.outline,
+                unfocusedPlaceholderColor =MaterialTheme.colorScheme.outline,
+                disabledPlaceholderColor =MaterialTheme.colorScheme.outline,
+                errorPlaceholderColor =MaterialTheme.colorScheme.outline,
+                unfocusedBorderColor = Color.Transparent,
                 disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorBorderColor = MaterialTheme.colorScheme.errorContainer,
             )
         )
 
@@ -197,7 +206,7 @@ private fun InputFieldError(
             Text(
                 text = error,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.error,
+                color = MaterialTheme.colorScheme.errorContainer,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = MaterialTheme.spacing.small),

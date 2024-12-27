@@ -1,13 +1,11 @@
 package com.example.medeaseclient.data.util
 
-import android.R.attr.phoneNumber
 import android.util.Patterns
 import java.text.SimpleDateFormat
 import java.util.Locale
-import java.util.regex.Pattern
 
 data class ValidationError(val message: String)
-class AuthValidator {
+class Validator {
 
     fun validateHospitalName(hospitalName: String): ValidationError? {
         if (hospitalName.isBlank()) {
@@ -27,6 +25,7 @@ class AuthValidator {
         }
         return null
     }
+
     fun validateHospitalCity(hospitalCity: String): ValidationError? {
         if (hospitalCity.isBlank()) {
             return ValidationError(
@@ -46,6 +45,7 @@ class AuthValidator {
         }
         return null
     }
+
     fun validateEmail(email: String): ValidationError? {
         if (email.isBlank()) {
             return ValidationError(
@@ -59,6 +59,7 @@ class AuthValidator {
         }
         return null
     }
+
     fun validatePhoneNumber(phoneNumber: String): ValidationError? {
         if (phoneNumber.isBlank()) {
             return ValidationError(
@@ -77,6 +78,7 @@ class AuthValidator {
         }
         return null
     }
+
     fun validatePinCode(pinCode: String): ValidationError? {
         if (pinCode.isBlank()) {
             return ValidationError(
@@ -95,6 +97,7 @@ class AuthValidator {
         }
         return null
     }
+
     fun validatePassword(password: String): ValidationError? {
         if (password.isBlank()) {
             return ValidationError(
@@ -128,6 +131,7 @@ class AuthValidator {
         }
         return null
     }
+
     fun validateConfirmPassword(password: String, confirmPassword: String): ValidationError? {
         if (confirmPassword.isBlank()) {
             return ValidationError(
@@ -138,6 +142,113 @@ class AuthValidator {
             return ValidationError(
                 "Passwords do not match"
             )
+        }
+        return null
+    }
+
+    fun validateDoctorName(doctorName: String): ValidationError? {
+        if (doctorName.isBlank()) {
+            return ValidationError("Doctor name cannot be empty")
+        }
+        if (doctorName.length < 3) {
+            return ValidationError("Doctor name must be at least 3 characters long")
+        }
+        if (doctorName.any { it.isDigit() }) {
+            return ValidationError("Doctor name should not contain any digits")
+        }
+        return null
+    }
+
+    fun validateSpecialist(specialist: String): ValidationError? {
+        if (specialist.isBlank()) {
+            return ValidationError("Specialist cannot be empty")
+        }
+        if (specialist.length < 3) {
+            return ValidationError("Specialist must be at least 3 characters long")
+        }
+        if (specialist.any { it.isDigit() }) {
+            return ValidationError("Specialist should not contain any digits")
+        }
+        return null
+    }
+
+    fun validateExperience(experience: String): ValidationError? {
+        if (experience.isBlank()) {
+            return ValidationError("Experience cannot be empty")
+        }
+        if (!experience.all { it.isDigit() }) {
+            return ValidationError("Experience must contain only digits")
+        }
+        return null
+    }
+    fun validateFrom(fromDate: String, toDate: String): ValidationError? {
+        if (fromDate.isBlank()) {
+            return ValidationError("From Date cannot be empty")
+        }
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+        val fromDateObj = dateFormat.parse(fromDate)
+
+        if (toDate.isNotBlank()) {
+            val toDateObj = dateFormat.parse(toDate)
+            if (fromDateObj != null) {
+                if (fromDateObj.compareTo(toDateObj) == 0) {
+                    return ValidationError("From and To dates cannot be the same.")
+                }
+                if (!fromDateObj.before(toDateObj)) {
+                    return ValidationError("From Date cannot be after To Date.")
+                }
+            }
+        }
+        return null
+    }
+
+    fun validateTo(toDate: String, fromDate: String): ValidationError? {
+        if (toDate.isBlank()) {
+            return ValidationError("To Date cannot be empty")
+        }
+        if (fromDate.isNotBlank()) {
+            val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+            val fromDateObj = dateFormat.parse(fromDate)
+            val toDateObj = dateFormat.parse(toDate)
+
+            if (toDateObj != null) {
+                if (toDateObj.compareTo(fromDateObj) == 0) {
+                    return ValidationError("To and From dates cannot be the same.")
+                }
+                if (toDateObj.before(fromDateObj)) {
+                    return ValidationError("To Date cannot be before From Date.")
+                }
+            }
+        }
+        return null
+    }
+
+    fun validateGenAvail(genAvail: String): ValidationError? {
+        if (genAvail.isBlank()) {
+            return ValidationError("General availability cannot be empty")
+        }
+        if (!genAvail.all { it.isDigit() }) {
+            return ValidationError("General availability must contain only digits")
+        }
+        return null
+    }
+
+    fun validateCurrAvail(currAvail: String): ValidationError? {
+        if (currAvail.isBlank()) {
+            return ValidationError("Current availability cannot be empty")
+        }
+        if (!currAvail.all { it.isDigit() }) {
+            return ValidationError("Current availability must contain only digits")
+        }
+        return null
+    }
+
+    fun validateEmergency(emergency: String): ValidationError? {
+        if (emergency.isBlank()) {
+            return ValidationError("Emergency contact cannot be empty")
+        }
+        if (!emergency.all { it.isDigit() }) {
+            return ValidationError("Emergency must contain only digits")
         }
         return null
     }
