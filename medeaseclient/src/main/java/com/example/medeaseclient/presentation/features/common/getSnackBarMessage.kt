@@ -33,10 +33,14 @@ fun getSnackbarToastMessage(failure: Any?): String {
         is DoctorsFailure.NetworkError -> "No internet connection"
         is DoctorsFailure.DataNotFound -> "Data not found"
         is DoctorsFailure.DatabaseError -> "Database error"
+        is DoctorsFailure.InvalidData -> "Invalid data"
 
         is DoctorsSuccess.DoctorAdded -> "Doctor added successfully"
         is DoctorsSuccess.DoctorUpdated -> "Doctor updated successfully"
         is DoctorsSuccess.DoctorDeleted -> "Doctor deleted successfully"
+        is DoctorsSuccess.BedAdded -> "Bed added successfully"
+        is DoctorsSuccess.BedUpdated -> "Bed updated successfully"
+        is DoctorsSuccess.BedDeleted -> "Bed deleted successfully"
         else -> "An unexpected error occurred"
     }
 }
