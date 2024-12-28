@@ -1,5 +1,6 @@
 package com.example.medeaseclient.presentation.features.doctorsAndBeds
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,11 +24,18 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -41,7 +49,11 @@ import com.example.designsystem.components.OutlinedInputField
 import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
+import com.example.medeaseclient.data.repository.doctor.DoctorsSuccess
+import com.example.medeaseclient.domain.model.Doctor
 import com.example.medeaseclient.presentation.features.common.CustomTopBar
+import com.example.medeaseclient.presentation.features.common.LoadingDialog
+import com.example.medeaseclient.presentation.features.common.getSnackbarToastMessage
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodels.DoctorsEvents
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodels.DoctorsStates
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodels.DoctorsViewModel
@@ -50,23 +62,94 @@ import com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodels
 @Composable
 fun AddDoctorsScreen(
     viewModel: DoctorsViewModel = hiltViewModel(),
+    doctor: Doctor,
+    hospitalId: String,
     navController: NavHostController
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.doctorsEvents(
+            DoctorsEvents.FillDoctorForm(
+                doctor.copy(
+                    hospitalId = hospitalId
+                )
+            )
+        )
+    }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    LaunchedEffect(key1 = state.doctorsSuccess) {
+        if (state.doctorsSuccess != null) {
+            val successMessage = getSnackbarToastMessage(state.doctorsSuccess)
+            Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show()
+            viewModel.doctorsEvents(DoctorsEvents.ResetDoctorsSuccess)
+            if(DoctorsSuccess.DoctorUpdated == state.doctorsSuccess){
+                navController.navigateUp()
+            }
+        }
+    }
+    LaunchedEffect(key1 = state.doctorsFailure) {
+        if (state.doctorsFailure != null) {
+            val errorMessage = getSnackbarToastMessage(state.doctorsFailure)
+            snackbarHostState.showSnackbar(
+                message = errorMessage,
+                duration = SnackbarDuration.Short,
+                withDismissAction = true
+            )
+            viewModel.doctorsEvents(DoctorsEvents.ResetDoctorsFailure)
+        }
+    }
+
     AddDoctorsScreenContent(
         state = state,
+        snackbarHostState = snackbarHostState,
         onBackClick = { navController.navigateUp() },
-        onAddNewDoctorClick = { navController.navigate(ClientRoutes.AddDoctorScreen) },
+        onAddNewDoctorClick = {
+            viewModel.doctorsEvents(
+                DoctorsEvents.AddDoctor(
+                    Doctor(
+                        doctorId = "",
+                        hospitalId = state.hospitalId,
+                        name = state.doctorName,
+                        specialist = state.specialist,
+                        experience = state.experience,
+                        availabilityFrom = state.from,
+                        availabilityTo = state.to,
+                        generalAvailability = state.genAvail,
+                        currentAvailability = state.currAvail,
+                        emergencyAvailability = state.emergency
+                    )
+                )
+            )
+        },
+        onUpdateDoctorClick = { viewModel.doctorsEvents(
+            DoctorsEvents.UpdateDoctor(
+                Doctor(
+                    doctorId = state.doctorId,
+                    hospitalId = state.hospitalId,
+                    name = state.doctorName,
+                    specialist = state.specialist,
+                    experience = state.experience,
+                    availabilityFrom = state.from,
+                    availabilityTo = state.to,
+                    generalAvailability = state.genAvail,
+                    currentAvailability = state.currAvail,
+                    emergencyAvailability = state.emergency
+                )
+            )
+        ) },
         events = viewModel::doctorsEvents
     )
-
 }
 
 @Composable
 fun AddDoctorsScreenContent(
     state: DoctorsStates,
+    snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onAddNewDoctorClick: () -> Unit,
+    onUpdateDoctorClick: () -> Unit,
     events: (DoctorsEvents) -> Unit
 ) {
     Scaffold(
@@ -75,13 +158,26 @@ fun AddDoctorsScreenContent(
                 onBackClick = { onBackClick.invoke() },
                 title = {
                     Text(
-                        text = "Add Doctors",
+                        text = if (state.doctorId.isNotBlank()) "Update Doctor" else "Add Doctor",
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Center,
                     )
                 },
             )
         },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+            ) {
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                    snackbarData = it,
+                    actionColor = MaterialTheme.colorScheme.secondary,
+                    dismissActionContentColor = MaterialTheme.colorScheme.secondary
+                )
+            }
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -90,6 +186,9 @@ fun AddDoctorsScreenContent(
                 .padding(horizontal = MaterialTheme.spacing.mediumLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            if (state.loading) {
+                LoadingDialog(true)
+            }
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
             OutlinedInputField(
                 value = state.doctorName,
@@ -179,7 +278,9 @@ fun AddDoctorsScreenContent(
                 )
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
                 Row(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -232,7 +333,9 @@ fun AddDoctorsScreenContent(
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
                 Row(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -319,9 +422,9 @@ fun AddDoctorsScreenContent(
                 }
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
                 PrimaryButton(
-                    onClick = {},
+                    onClick = { if (state.doctorId.isNotBlank()) onUpdateDoctorClick.invoke() else onAddNewDoctorClick.invoke() },
                     shape = MaterialTheme.shapes.large,
-                    label = "Add Doctor",
+                    label = if (state.doctorId.isNotBlank()) "Update Doctor" else "Add Doctor",
                     modifier = Modifier.fillMaxWidth(),
                     enabled = state.isAddDoctorFormValid()
                 )
@@ -340,7 +443,9 @@ fun AddDoctorsScreenPreview() {
             state = DoctorsStates(),
             onBackClick = {},
             onAddNewDoctorClick = {},
-            events = {}
+            events = {},
+            onUpdateDoctorClick = {},
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }

@@ -6,10 +6,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import arrow.core.Either
 import com.example.medeaseclient.data.firebase.FirebaseWrapper
-import com.example.medeaseclient.data.repository.doctor.AuthSuccess
-import com.example.medeaseclient.data.repository.doctor.ClientAuthRepository
-import com.example.medeaseclient.data.repository.doctor.SignInWithEmailAndPasswordFailure
-import com.example.medeaseclient.data.repository.doctor.SignupWithEmailAndPasswordFailure
 import com.example.medeaseclient.data.util.HOSPITALS_COLLECTION
 import com.example.medeaseclient.data.util.PreferencesKeys
 import com.example.medeaseclient.domain.model.ClientProfile

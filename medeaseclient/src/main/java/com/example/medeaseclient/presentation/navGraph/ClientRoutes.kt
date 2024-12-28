@@ -1,3 +1,4 @@
+import com.example.medeaseclient.domain.model.Doctor
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,10 +27,10 @@ sealed class ClientRoutes {
     object AppointmentScreen : ClientRoutes()
 
     @Serializable
-    object DoctorScreen : ClientRoutes()
-    @Serializable
-    object AddDoctorScreen : ClientRoutes()
+    data class DoctorScreen(val hospitalId: String) : ClientRoutes()
 
+    @Serializable
+    data class AddDoctorScreen(val doctor: Doctor, val hospitalId: String) : ClientRoutes()
 
     @Serializable
     object BedScreen : ClientRoutes()

@@ -12,6 +12,7 @@ data class ClientProfile(
     val hospitalPinCode: String? = null,
 )
 
+@Serializable
 data class Doctor(
     val doctorId: String = "",
     val hospitalId: String = "",

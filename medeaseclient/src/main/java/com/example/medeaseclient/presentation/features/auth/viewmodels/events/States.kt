@@ -1,7 +1,7 @@
 package com.example.medeaseclient.presentation.features.auth.viewmodels.events
 
-import com.example.medeaseclient.data.repository.doctor.SignInWithEmailAndPasswordFailure
-import com.example.medeaseclient.data.repository.doctor.SignupWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.auth.SignInWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.auth.SignupWithEmailAndPasswordFailure
 
 data class SignInStates(
     val email: String = "",

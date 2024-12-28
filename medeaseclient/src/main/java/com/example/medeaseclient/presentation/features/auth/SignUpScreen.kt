@@ -33,7 +33,7 @@ import com.example.medeaseclient.presentation.features.auth.components.AuthBotto
 import com.example.medeaseclient.presentation.features.common.AuthHeadings
 import com.example.medeaseclient.presentation.features.common.CustomTopBar
 import com.example.medeaseclient.presentation.features.auth.components.SignUpTextFields
-import com.example.medeaseclient.presentation.features.common.getSnackbarMessage
+import com.example.medeaseclient.presentation.features.common.getSnackbarToastMessage
 import com.example.medeaseclient.presentation.features.auth.utils.isSignUpFormValid
 import com.example.medeaseclient.presentation.features.auth.viewmodels.AuthViewModel
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.AuthEvent
@@ -64,7 +64,7 @@ fun SignUpScreen(
     }
     LaunchedEffect(key1 = state.failure) {
         if (state.failure != null) {
-            val errorMessage = getSnackbarMessage(state.failure)
+            val errorMessage = getSnackbarToastMessage(state.failure)
             snackbarHostState.showSnackbar(
                 message = errorMessage,
                 duration = SnackbarDuration.Short,
