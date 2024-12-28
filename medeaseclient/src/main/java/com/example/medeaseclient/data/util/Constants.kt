@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 
 const val HOSPITALS_COLLECTION = "hospitals"
 const val DOCTORS_COLLECTION = "doctors"
+const val BEDS_COLLECTION = "beds"
 
 
 object PreferencesKeys {

@@ -1,13 +1,14 @@
 package com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medeaseclient.data.repository.doctor.ClientDoctorRepository
+import com.example.medeaseclient.data.repository.doctor.DoctorsFailure
+import com.example.medeaseclient.data.repository.doctor.DoctorsSuccess
 import com.example.medeaseclient.data.util.Validator
+import com.example.medeaseclient.domain.model.Bed
 import com.example.medeaseclient.domain.model.Doctor
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,18 +62,20 @@ class DoctorsViewModel @Inject constructor(
             }
 
             is DoctorsEvents.FillDoctorForm -> {
-                _state.update {it.copy(
-                    doctorId = event.doctor.doctorId,
-                    hospitalId = event.doctor.hospitalId,
-                    doctorName = event.doctor.name,
-                    specialist = event.doctor.specialist,
-                    experience = event.doctor.experience,
-                    from = event.doctor.availabilityFrom,
-                    to = event.doctor.availabilityTo,
-                    genAvail = event.doctor.generalAvailability,
-                    currAvail = event.doctor.currentAvailability,
-                    emergency = event.doctor.emergencyAvailability,
-                )}
+                _state.update {
+                    it.copy(
+                        doctorId = event.doctor.doctorId,
+                        hospitalId = event.doctor.hospitalId,
+                        doctorName = event.doctor.name,
+                        specialist = event.doctor.specialist,
+                        experience = event.doctor.experience,
+                        from = event.doctor.availabilityFrom,
+                        to = event.doctor.availabilityTo,
+                        genAvail = event.doctor.generalAvailability,
+                        currAvail = event.doctor.currentAvailability,
+                        emergency = event.doctor.emergencyAvailability,
+                    )
+                }
             }
 
             /****************************************************************************************/

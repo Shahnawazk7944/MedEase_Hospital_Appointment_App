@@ -132,7 +132,8 @@ fun HomeScreen(
                 0 -> navController.navigate(ClientRoutes.DoctorScreen(hospitalId = state.clientProfile?.hospitalId
                     ?:"No ID Found"))
                 1 -> navController.navigate(ClientRoutes.AppointmentScreen)
-                2 -> navController.navigate(ClientRoutes.BedScreen)
+                2 -> navController.navigate(ClientRoutes.BedScreen(hospitalId = state.clientProfile?.hospitalId
+                    ?:"No ID Found"))
                 3 -> navController.navigate(
                     ClientRoutes.ProfileScreen(
                         hospitalName = state.clientProfile?.hospitalName ?: "Unknown",

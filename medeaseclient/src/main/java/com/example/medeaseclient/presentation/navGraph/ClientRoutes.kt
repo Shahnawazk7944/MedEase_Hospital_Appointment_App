@@ -1,3 +1,4 @@
+import com.example.medeaseclient.domain.model.Bed
 import com.example.medeaseclient.domain.model.Doctor
 import kotlinx.serialization.Serializable
 
@@ -33,6 +34,8 @@ sealed class ClientRoutes {
     data class AddDoctorScreen(val doctor: Doctor, val hospitalId: String) : ClientRoutes()
 
     @Serializable
-    object BedScreen : ClientRoutes()
+    data class BedScreen(val hospitalId: String) : ClientRoutes()
 
+    @Serializable
+    data class UpdateBedScreen(val hospitalId: String, val bed: Bed) : ClientRoutes()
 }

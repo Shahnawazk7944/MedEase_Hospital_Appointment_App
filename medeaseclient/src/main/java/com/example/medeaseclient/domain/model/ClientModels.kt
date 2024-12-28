@@ -25,3 +25,14 @@ data class Doctor(
     val currentAvailability: String = "",
     val emergencyAvailability: String = ""
 )
+
+@Serializable
+data class Bed(
+    val bedId: String = "",
+    val bedType: String = "",
+    val purpose: String = "",
+    val features: List<String> = emptyList(),
+    val perDayBedPriceINR: String = "",
+    val availability: String = "",
+    val availableUnits: String = "0"
+)

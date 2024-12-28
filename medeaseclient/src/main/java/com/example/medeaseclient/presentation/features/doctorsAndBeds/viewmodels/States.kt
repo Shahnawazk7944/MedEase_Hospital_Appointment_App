@@ -2,6 +2,7 @@ package com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodel
 
 import com.example.medeaseclient.data.repository.doctor.DoctorsFailure
 import com.example.medeaseclient.data.repository.doctor.DoctorsSuccess
+import com.example.medeaseclient.domain.model.Bed
 import com.example.medeaseclient.domain.model.Doctor
 
 data class DoctorsStates(

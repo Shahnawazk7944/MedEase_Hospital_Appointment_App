@@ -162,7 +162,7 @@ fun DoctorsScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = MaterialTheme.spacing.medium),
+                .padding(horizontal = MaterialTheme.spacing.mediumLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item(key = state.loading || state.fetchingDoctors) { LoadingDialog(state.loading || state.fetchingDoctors) }
@@ -185,8 +185,8 @@ fun DoctorsScreenContent(
                         .fillMaxWidth()
                         .padding(vertical = MaterialTheme.spacing.medium)
                         .wrapContentHeight(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onBackground),
-                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(MaterialTheme.spacing.medium)

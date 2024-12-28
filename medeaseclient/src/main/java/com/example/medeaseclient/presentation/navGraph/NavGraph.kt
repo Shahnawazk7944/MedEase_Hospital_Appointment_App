@@ -10,11 +10,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.medeaseclient.domain.model.Bed
 import com.example.medeaseclient.domain.model.ClientProfile
 import com.example.medeaseclient.domain.model.Doctor
 import com.example.medeaseclient.presentation.features.auth.SignInScreen
 import com.example.medeaseclient.presentation.features.auth.SignUpScreen
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.AddDoctorsScreen
+import com.example.medeaseclient.presentation.features.doctorsAndBeds.BedsScreen
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.DoctorsScreen
 import com.example.medeaseclient.presentation.features.helper.CommingSoonScreen
 import com.example.medeaseclient.presentation.features.helper.HospitalProfileScreen
@@ -92,21 +94,34 @@ fun MedEaseClientNavGraph(
         }
         composable<ClientRoutes.AddDoctorScreen>(
             typeMap = mapOf(
-                typeOf<Doctor>() to CustomDoctorNavigationTypes.DoctorType
+                typeOf<Doctor>() to CustomNavigationTypes.DoctorType
             )
         ) { backStackEntry ->
             val hospital : ClientRoutes.AddDoctorScreen = backStackEntry.toRoute()
             AddDoctorsScreen(navController = navController, doctor = hospital.doctor, hospitalId = hospital.hospitalId)
         }
-        composable<ClientRoutes.BedScreen> {
-            CommingSoonScreen(
-                onBackClick = { navController.navigateUp() }
+        composable<ClientRoutes.BedScreen> { backStackEntry ->
+            val hospital : ClientRoutes.BedScreen = backStackEntry.toRoute()
+            BedsScreen(
+                hospitalId = hospital.hospitalId,
+                navController = navController
+            )
+        }
+        composable<ClientRoutes.UpdateBedScreen>(
+            typeMap = mapOf(
+                typeOf<Bed>() to CustomNavigationTypes.BedType
+            )
+        ) { backStackEntry ->
+            val hospital : ClientRoutes.UpdateBedScreen = backStackEntry.toRoute()
+            BedsScreen(
+                hospitalId = hospital.hospitalId,
+                navController = navController
             )
         }
     }
 }
 
-private object CustomDoctorNavigationTypes {
+private object CustomNavigationTypes {
     val DoctorType = object : NavType<Doctor>(isNullableAllowed = false) {
         override fun get(bundle: Bundle, key: String): Doctor? {
             return Json.decodeFromString(bundle.getString(key) ?: return null)
@@ -121,6 +136,24 @@ private object CustomDoctorNavigationTypes {
         }
 
         override fun put(bundle: Bundle, key: String, value: Doctor) {
+            bundle.putString(key, Json.encodeToString(value))
+        }
+    }
+
+    val BedType = object : NavType<Bed>(isNullableAllowed = false) {
+        override fun get(bundle: Bundle, key: String): Bed? {
+            return Json.decodeFromString(bundle.getString(key) ?: return null)
+        }
+
+        override fun parseValue(value: String): Bed {
+            return Json.decodeFromString(Uri.decode(value))
+        }
+
+        override fun serializeAsValue(value: Bed): String {
+            return Uri.encode(Json.encodeToString(value))
+        }
+
+        override fun put(bundle: Bundle, key: String, value: Bed) {
             bundle.putString(key, Json.encodeToString(value))
         }
     }
