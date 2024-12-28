@@ -39,7 +39,7 @@ import com.example.medeaseclient.presentation.features.auth.viewmodels.events.Si
 import com.example.medeaseclient.presentation.features.auth.viewmodels.events.SignInStates
 import com.example.medeaseclient.presentation.features.common.AuthHeadings
 import com.example.medeaseclient.presentation.features.common.CustomTopBar
-import com.example.medeaseclient.presentation.features.common.getSnackbarMessage
+import com.example.medeaseclient.presentation.features.common.getSnackbarToastMessage
 
 @Composable
 fun SignInScreen(
@@ -64,7 +64,7 @@ fun SignInScreen(
     }
     LaunchedEffect(key1 = state.failure) {
         if (state.failure != null) {
-            val errorMessage = getSnackbarMessage(state.failure)
+            val errorMessage = getSnackbarToastMessage(state.failure)
             snackbarHostState.showSnackbar(
                 message = errorMessage,
                 duration = SnackbarDuration.Short,

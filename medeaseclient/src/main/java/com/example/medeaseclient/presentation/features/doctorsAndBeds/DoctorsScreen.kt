@@ -2,6 +2,7 @@ package com.example.medeaseclient.presentation.features.doctorsAndBeds
 
 
 import ClientRoutes
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,15 +32,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -52,28 +60,75 @@ import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
 import com.example.medeaseclient.domain.model.Doctor
 import com.example.medeaseclient.presentation.features.common.CustomTopBar
+import com.example.medeaseclient.presentation.features.common.LoadingDialog
+import com.example.medeaseclient.presentation.features.common.getSnackbarToastMessage
+import com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodels.DoctorsEvents
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodels.DoctorsStates
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodels.DoctorsViewModel
 
 @Composable
 fun DoctorsScreen(
     viewModel: DoctorsViewModel = hiltViewModel(),
+    hospitalId: String,
     navController: NavHostController
 ) {
+    LaunchedEffect(Unit) { viewModel.doctorsEvents(DoctorsEvents.GetDoctors) }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
+    LaunchedEffect(key1 = state.doctorsSuccess) {
+        if (state.doctorsSuccess != null) {
+            val successMessage = getSnackbarToastMessage(state.doctorsSuccess)
+            Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show()
+            viewModel.doctorsEvents(DoctorsEvents.ResetDoctorsSuccess)
+        }
+    }
+    LaunchedEffect(key1 = state.doctorsFailure) {
+        if (state.doctorsFailure != null) {
+            val errorMessage = getSnackbarToastMessage(state.doctorsFailure)
+            snackbarHostState.showSnackbar(
+                message = errorMessage,
+                duration = SnackbarDuration.Short,
+                withDismissAction = true
+            )
+            viewModel.doctorsEvents(DoctorsEvents.ResetDoctorsFailure)
+        }
+    }
     DoctorsScreenContent(
+        hospitalId = hospitalId,
         state = state,
+        snackbarHostState = snackbarHostState,
         onBackClick = { navController.navigateUp() },
-        onAddNewDoctorClick = { navController.navigate(ClientRoutes.AddDoctorScreen) },
+        onAddNewDoctorClick = {
+            navController.navigate(
+                ClientRoutes.AddDoctorScreen(
+                    doctor = Doctor(),
+                    hospitalId = hospitalId
+                )
+            )
+        },
+        onUpdateDoctorClick = { oldDoctor ->
+            navController.navigate(
+                ClientRoutes.AddDoctorScreen(
+                    doctor = oldDoctor,
+                    hospitalId = hospitalId
+                )
+            )
+        },
+        onDoctorDelete = { doctorId -> viewModel.doctorsEvents(DoctorsEvents.DeleteDoctor(doctorId)) },
     )
 }
 
 
 @Composable
 fun DoctorsScreenContent(
+    hospitalId: String,
     state: DoctorsStates,
+    snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
+    onUpdateDoctorClick: (doctor: Doctor) -> Unit,
+    onDoctorDelete: (doctorId: String) -> Unit,
     onAddNewDoctorClick: () -> Unit,
 ) {
     Scaffold(
@@ -89,6 +144,19 @@ fun DoctorsScreenContent(
                 },
             )
         },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+            ) {
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                    snackbarData = it,
+                    actionColor = MaterialTheme.colorScheme.secondary,
+                    dismissActionContentColor = MaterialTheme.colorScheme.secondary
+                )
+            }
+        }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -97,7 +165,8 @@ fun DoctorsScreenContent(
                 .padding(horizontal = MaterialTheme.spacing.medium),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item {
+            item(key = state.loading || state.fetchingDoctors) { LoadingDialog(state.loading || state.fetchingDoctors) }
+            item(key = "add_doctor") {
                 PrimaryButton(
                     onClick = { onAddNewDoctorClick.invoke() },
                     shape = RoundedCornerShape(MaterialTheme.spacing.large),
@@ -108,7 +177,9 @@ fun DoctorsScreenContent(
                         .padding(vertical = MaterialTheme.spacing.medium),
                 )
             }
-            items(state.doctors) { doctor ->
+            items(
+                state.doctors.filter { it.hospitalId == hospitalId },
+                key = { it.doctorId }) { doctor ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -132,7 +203,7 @@ fun DoctorsScreenContent(
                                 color = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.weight(1f)
                             )
-                            IconButton(onClick = { }) {
+                            IconButton(onClick = { onUpdateDoctorClick.invoke(doctor) }) {
                                 Icon(
                                     imageVector = Icons.Default.EditNote,
                                     contentDescription = "Edit icon",
@@ -140,7 +211,7 @@ fun DoctorsScreenContent(
                                     modifier = Modifier.size(25.dp)
                                 )
                             }
-                            IconButton(onClick = { }) {
+                            IconButton(onClick = { onDoctorDelete.invoke(doctor.doctorId) }) {
                                 Icon(
                                     imageVector = Icons.Default.DeleteForever,
                                     contentDescription = "Delete icon",
@@ -269,6 +340,7 @@ fun DoctorsScreenContentPreview() {
         val state = DoctorsStates(
             doctors = listOf(
                 Doctor(
+                    doctorId = "1",
                     name = "Dr. John Doe",
                     specialist = "Cardiologist",
                     experience = "10",
@@ -279,6 +351,7 @@ fun DoctorsScreenContentPreview() {
                     emergencyAvailability = "20"
                 ),
                 Doctor(
+                    doctorId = "2",
                     name = "Dr. Jane Smith",
                     specialist = "Dermatologist",
                     experience = "5",
@@ -289,6 +362,7 @@ fun DoctorsScreenContentPreview() {
                     emergencyAvailability = "30"
                 ),
                 Doctor(
+                    doctorId = "3",
                     name = "Dr. John Doe",
                     specialist = "Cardiologist",
                     experience = "10",
@@ -299,6 +373,7 @@ fun DoctorsScreenContentPreview() {
                     emergencyAvailability = "20"
                 ),
                 Doctor(
+                    doctorId = "4",
                     name = "Dr. Jane Smith",
                     specialist = "Dermatologist",
                     experience = "5",
@@ -311,6 +386,14 @@ fun DoctorsScreenContentPreview() {
 
                 )
         )
-        DoctorsScreenContent(state, {}, {})
+        DoctorsScreenContent(
+            hospitalId = "",
+            state = state,
+            snackbarHostState = remember { SnackbarHostState() },
+            onBackClick = {},
+            onAddNewDoctorClick = {},
+            onDoctorDelete = {},
+            onUpdateDoctorClick = {}
+        )
     }
 }

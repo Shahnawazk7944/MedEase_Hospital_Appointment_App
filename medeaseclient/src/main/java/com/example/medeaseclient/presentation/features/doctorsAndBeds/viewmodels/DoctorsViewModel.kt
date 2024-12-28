@@ -1,5 +1,6 @@
 package com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medeaseclient.data.repository.doctor.ClientDoctorRepository
@@ -57,6 +58,21 @@ class DoctorsViewModel @Inject constructor(
                         doctorsSuccess = null
                     )
                 }
+            }
+
+            is DoctorsEvents.FillDoctorForm -> {
+                _state.update {it.copy(
+                    doctorId = event.doctor.doctorId,
+                    hospitalId = event.doctor.hospitalId,
+                    doctorName = event.doctor.name,
+                    specialist = event.doctor.specialist,
+                    experience = event.doctor.experience,
+                    from = event.doctor.availabilityFrom,
+                    to = event.doctor.availabilityTo,
+                    genAvail = event.doctor.generalAvailability,
+                    currAvail = event.doctor.currentAvailability,
+                    emergency = event.doctor.emergencyAvailability,
+                )}
             }
 
             /****************************************************************************************/
@@ -170,6 +186,7 @@ class DoctorsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             clientDoctorRepository.fetchDoctors().collect {
                 it.onRight { doctors ->
+                    delay(500)
                     _state.update {
                         it.copy(
                             doctors = doctors,
@@ -192,6 +209,7 @@ class DoctorsViewModel @Inject constructor(
         _state.update { it.copy(loading = true) }
         viewModelScope.launch(Dispatchers.IO) {
             clientDoctorRepository.addDoctor(doctor).onRight { doctorAdded ->
+                delay(1000)
                 _state.update { it.copy(loading = false, doctorsSuccess = doctorAdded) }
                 _state.update { it.resetAddDoctorForm() }
             }.onLeft { failure ->
@@ -209,7 +227,9 @@ class DoctorsViewModel @Inject constructor(
         _state.update { it.copy(loading = true) }
         viewModelScope.launch(Dispatchers.IO) {
             clientDoctorRepository.updateDoctor(doctor).onRight { doctorUpdated ->
+                delay(1000)
                 _state.update { it.copy(loading = false, doctorsSuccess = doctorUpdated) }
+                _state.update { it.resetAddDoctorForm() }
             }.onLeft { failure ->
                 _state.update {
                     it.copy(
@@ -225,6 +245,7 @@ class DoctorsViewModel @Inject constructor(
         _state.update { it.copy(loading = true) }
         viewModelScope.launch(Dispatchers.IO) {
             clientDoctorRepository.deleteDoctor(doctorId).onRight { doctorDeleted ->
+                delay(1000)
                 _state.update { it.copy(loading = false, doctorsSuccess = doctorDeleted) }
             }.onLeft { failure ->
                 _state.update {

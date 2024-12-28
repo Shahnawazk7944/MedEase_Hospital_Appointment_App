@@ -7,52 +7,12 @@ import com.example.medeaseclient.domain.model.Doctor
 data class DoctorsStates(
     val loading: Boolean = false,
     val fetchingDoctors: Boolean = false,
-    val doctors: List<Doctor> = listOf(
-        Doctor(
-            name = "Dr. John Doe",
-            specialist = "Cardiologist",
-            experience = "10",
-            availabilityFrom = "01-01-2023",
-            availabilityTo = "31-12-2023",
-            generalAvailability = "80",
-            currentAvailability = "50",
-            emergencyAvailability = "20"
-        ),
-        Doctor(
-            name = "Dr. Jane Smith",
-            specialist = "Dermatologist",
-            experience = "5",
-            availabilityFrom = "01-01-2023",
-            availabilityTo = "31-12-2023",
-            generalAvailability = "70",
-            currentAvailability = "60",
-            emergencyAvailability = "30"
-        ),
-        Doctor(
-            name = "Dr. John Doe",
-            specialist = "Cardiologist",
-            experience = "10",
-            availabilityFrom = "01-01-2023",
-            availabilityTo = "31-12-2023",
-            generalAvailability = "80",
-            currentAvailability = "50",
-            emergencyAvailability = "20"
-        ),
-        Doctor(
-            name = "Dr. Jane Smith",
-            specialist = "Dermatologist",
-            experience = "5",
-            availabilityFrom = "01-01-2023",
-            availabilityTo = "31-12-2023",
-            generalAvailability = "70",
-            currentAvailability = "60",
-            emergencyAvailability = "30"
-        ),
-
-        ),
+    val doctors: List<Doctor> = emptyList<Doctor>(),
     val doctorsSuccess: DoctorsSuccess? = null,
     val doctorsFailure: DoctorsFailure? = null,
 
+    val doctorId: String = "",
+    val hospitalId: String = "",
     val doctorName: String = "",
     val specialist: String = "",
     val experience: String = "",
@@ -73,6 +33,7 @@ data class DoctorsStates(
 
 sealed class DoctorsEvents {
     data object GetDoctors : DoctorsEvents()
+    data class FillDoctorForm(val doctor: Doctor) : DoctorsEvents()
     data class AddDoctor(val doctor: Doctor) : DoctorsEvents()
     data class UpdateDoctor(val doctor: Doctor) : DoctorsEvents()
     data class DeleteDoctor(val doctorId: String) : DoctorsEvents()

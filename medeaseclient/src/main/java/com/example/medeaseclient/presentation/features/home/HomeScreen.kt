@@ -59,7 +59,7 @@ import com.example.designsystem.theme.spacing
 import com.example.medeaseclient.presentation.features.common.CustomTopBar
 import com.example.medeaseclient.presentation.features.common.HomeHeadings
 import com.example.medeaseclient.presentation.features.common.LoadingDialog
-import com.example.medeaseclient.presentation.features.common.getSnackbarMessage
+import com.example.medeaseclient.presentation.features.common.getSnackbarToastMessage
 import com.example.medeaseclient.presentation.features.home.viewmodels.HomeViewModel
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeEvents
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeStates
@@ -81,7 +81,7 @@ fun HomeScreen(
     }
     LaunchedEffect(key1 = state.logoutFailure) {
         state.logoutFailure?.let {
-            val errorMessage = getSnackbarMessage(state.logoutFailure)
+            val errorMessage = getSnackbarToastMessage(state.logoutFailure)
             snackbarHostState.showSnackbar(
                 message = errorMessage,
                 duration = SnackbarDuration.Short,
@@ -92,7 +92,7 @@ fun HomeScreen(
     }
     LaunchedEffect(key1 = state.clientIdFailure) {
         state.clientIdFailure?.let {
-            val errorMessage = getSnackbarMessage(state.clientIdFailure)
+            val errorMessage = getSnackbarToastMessage(state.clientIdFailure)
             snackbarHostState.showSnackbar(
                 message = errorMessage,
                 duration = SnackbarDuration.Short,
@@ -101,7 +101,7 @@ fun HomeScreen(
     }
     LaunchedEffect(key1 = state.clientProfileFailure) {
         state.clientProfileFailure?.let {
-            val errorMessage = getSnackbarMessage(state.clientProfileFailure)
+            val errorMessage = getSnackbarToastMessage(state.clientProfileFailure)
             snackbarHostState.showSnackbar(
                 message = errorMessage,
                 duration = SnackbarDuration.Short,
@@ -129,7 +129,8 @@ fun HomeScreen(
         },
         onMedicalOptionClick = {
             when (it) {
-                0 -> navController.navigate(ClientRoutes.DoctorScreen)
+                0 -> navController.navigate(ClientRoutes.DoctorScreen(hospitalId = state.clientProfile?.hospitalId
+                    ?:"No ID Found"))
                 1 -> navController.navigate(ClientRoutes.AppointmentScreen)
                 2 -> navController.navigate(ClientRoutes.BedScreen)
                 3 -> navController.navigate(

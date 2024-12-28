@@ -1,7 +1,7 @@
 package com.example.medeaseclient.data.repository.home
 
 import arrow.core.Either
-import com.example.medeaseclient.data.repository.doctor.AuthSuccess
+import com.example.medeaseclient.data.repository.auth.AuthSuccess
 import com.example.medeaseclient.domain.model.ClientProfile
 
 interface ClientHomeRepository {

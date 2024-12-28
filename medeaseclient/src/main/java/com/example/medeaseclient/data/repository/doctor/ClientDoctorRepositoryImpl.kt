@@ -28,18 +28,26 @@ class ClientDoctorRepositoryImpl @Inject constructor(
                     return@addSnapshotListener
                 }
 
-                val doctors = snapshot?.documentChanges?.mapNotNull { documentChange ->
-                    if (documentChange.type == DocumentChange.Type.ADDED ||
-                        documentChange.type == DocumentChange.Type.MODIFIED
-                    ) {
-                        documentChange.document.toObject(Doctor::class.java)
-                            .copy(doctorId = documentChange.document.id)
-                    } else {
-                        null
-                    }
-                } ?: emptyList()
+                val doctors = snapshot?.toObjects(Doctor::class.java)?.map { doctor ->
+                    doctor.copy(doctorId = snapshot.documents.find { it.toObject(Doctor::class.java) == doctor }?.id ?: "")
+                }?.toMutableList() ?: mutableListOf()
 
-                trySend(doctors.right())
+                snapshot?.documentChanges?.forEach { documentChange ->
+                    when (documentChange.type) {
+                        DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
+                            val doctor = documentChange.document.toObject(Doctor::class.java)
+                                .copy(doctorId = documentChange.document.id)
+                            doctors.removeAll { it.doctorId == doctor.doctorId } // Prevent duplicates
+                            doctors.add(doctor)
+                        }
+                        DocumentChange.Type.REMOVED -> {
+                            val doctorId = documentChange.document.id
+                            doctors.removeAll { it.doctorId == doctorId }
+                        }
+                    }
+                }
+
+                trySend(doctors.toList().right()) // Send an immutable list
             }
 
             awaitClose {

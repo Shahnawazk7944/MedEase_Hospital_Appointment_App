@@ -1,7 +1,7 @@
 package com.example.medeaseclient.presentation.features.auth.viewmodels.events
 
-import com.example.medeaseclient.data.repository.doctor.SignInWithEmailAndPasswordFailure
-import com.example.medeaseclient.data.repository.doctor.SignupWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.auth.SignInWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.auth.SignupWithEmailAndPasswordFailure
 
 
 sealed class AuthEvent {
@@ -21,13 +21,17 @@ sealed class AuthEvent {
         val rememberMe: Boolean
     ) : AuthEvent()
 }
+
 sealed class SignInEvent {
     data class EmailChanged(val newValue: String) : SignInEvent()
     data class PasswordChanged(val newValue: String) : SignInEvent()
     data class RememberMeChanged(val newValue: Boolean) : SignInEvent()
-    data class RemoveFailure(val newValue: SignInWithEmailAndPasswordFailure? = null) : SignInEvent()
+    data class RemoveFailure(val newValue: SignInWithEmailAndPasswordFailure? = null) :
+        SignInEvent()
+
     data class ClearAllFields(val newValue: Boolean) : SignInEvent()
 }
+
 sealed class SignUpEvent {
     data class HospitalNameChanged(val newValue: String) : SignUpEvent()
     data class HospitalEmailChanged(val newValue: String) : SignUpEvent()
@@ -37,7 +41,9 @@ sealed class SignUpEvent {
     data class HospitalPasswordChanged(val newValue: String) : SignUpEvent()
     data class HospitalConfirmPasswordChanged(val newValue: String) : SignUpEvent()
     data class RememberMeChanged(val newValue: Boolean) : SignUpEvent()
-    data class RemoveFailure(val newValue: SignupWithEmailAndPasswordFailure? = null) : SignUpEvent()
+    data class RemoveFailure(val newValue: SignupWithEmailAndPasswordFailure? = null) :
+        SignUpEvent()
+
     data class ClearAllFields(val newValue: Boolean) : SignUpEvent()
 }
 

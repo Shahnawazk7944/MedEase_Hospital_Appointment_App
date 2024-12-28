@@ -1,12 +1,14 @@
 package com.example.medeaseclient.presentation.features.common
 
 import com.example.medeaseclient.data.repository.auth.GetRememberMeAndIDPreferencesFailure
-import com.example.medeaseclient.data.repository.doctor.SignInWithEmailAndPasswordFailure
-import com.example.medeaseclient.data.repository.doctor.SignupWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.auth.SignInWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.auth.SignupWithEmailAndPasswordFailure
+import com.example.medeaseclient.data.repository.doctor.DoctorsFailure
+import com.example.medeaseclient.data.repository.doctor.DoctorsSuccess
 import com.example.medeaseclient.data.repository.home.ClientProfileFailure
 import com.example.medeaseclient.data.repository.home.LogoutFailure
 
-fun getSnackbarMessage(failure: Any?): String {
+fun getSnackbarToastMessage(failure: Any?): String {
     return when (failure) {
         //signup failures
         is SignupWithEmailAndPasswordFailure.InvalidEmail -> "Invalid email address"
@@ -26,6 +28,15 @@ fun getSnackbarMessage(failure: Any?): String {
         is ClientProfileFailure.NetworkError -> "No internet connection"
         is ClientProfileFailure.UserNotFound -> "User not found"
         is ClientProfileFailure.DatabaseError -> "Database error"
+
+        is DoctorsFailure.UnknownError -> "An unknown error occurred"
+        is DoctorsFailure.NetworkError -> "No internet connection"
+        is DoctorsFailure.DataNotFound -> "Data not found"
+        is DoctorsFailure.DatabaseError -> "Database error"
+
+        is DoctorsSuccess.DoctorAdded -> "Doctor added successfully"
+        is DoctorsSuccess.DoctorUpdated -> "Doctor updated successfully"
+        is DoctorsSuccess.DoctorDeleted -> "Doctor deleted successfully"
         else -> "An unexpected error occurred"
     }
 }
