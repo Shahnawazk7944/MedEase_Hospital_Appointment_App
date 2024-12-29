@@ -18,6 +18,7 @@ import com.example.medeaseclient.presentation.features.auth.SignUpScreen
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.AddDoctorsScreen
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.BedsScreen
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.DoctorsScreen
+import com.example.medeaseclient.presentation.features.doctorsAndBeds.UpdateBedsScreen
 import com.example.medeaseclient.presentation.features.helper.CommingSoonScreen
 import com.example.medeaseclient.presentation.features.helper.HospitalProfileScreen
 import com.example.medeaseclient.presentation.features.home.HomeScreen
@@ -113,8 +114,9 @@ fun MedEaseClientNavGraph(
             )
         ) { backStackEntry ->
             val hospital : ClientRoutes.UpdateBedScreen = backStackEntry.toRoute()
-            BedsScreen(
+            UpdateBedsScreen(
                 hospitalId = hospital.hospitalId,
+                bed = hospital.bed,
                 navController = navController
             )
         }
