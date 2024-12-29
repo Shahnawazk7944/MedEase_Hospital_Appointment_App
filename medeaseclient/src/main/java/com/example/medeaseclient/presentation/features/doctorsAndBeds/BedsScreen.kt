@@ -1,6 +1,7 @@
 package com.example.medeaseclient.presentation.features.doctorsAndBeds
 
 
+import ClientRoutes
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,7 +41,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.core.text.isDigitsOnly
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -99,13 +99,13 @@ fun BedsScreen(
                 )
             )
         },
-        onUpdateBedClick = { oldDoctor ->
-//            navController.navigate(
-//                ClientRoutes.AddDoctorScreen(
-//                    doctor = oldDoctor,
-//                    hospitalId = hospitalId
-//                )
-//            )
+        onUpdateBedClick = { oldBed ->
+            navController.navigate(
+                ClientRoutes.UpdateBedScreen(
+                    bed = oldBed,
+                    hospitalId = hospitalId
+                )
+            )
         },
         onBedDelete = { bedId ->
             viewModel.bedsEvents(
@@ -164,12 +164,17 @@ fun BedsScreenContent(
                 .padding(horizontal = MaterialTheme.spacing.mediumLarge),
         ) {
             item(key = "available_beds") {
-            Text(
-                text = "Available Beds",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.secondary
-            )
-        }
+                val availableBeds = state.beds.filter { bed ->
+                    !state.bedsFromHospital.any { it.bedId == bed.bedId }
+                }
+                if (availableBeds.isNotEmpty()) {
+                    Text(
+                        text = "Available Beds",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
             item(key = "common_beds") {
                 LazyRow(
                     modifier = Modifier
@@ -179,10 +184,9 @@ fun BedsScreenContent(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.large)
                 ) {
-                    items(
-                        state.beds.filter { bed ->
-                            !state.bedsFromHospital.any { it.bedId == bed.bedId }
-                        },
+                    items(state.beds.filter { bed ->
+                        !state.bedsFromHospital.any { it.bedId == bed.bedId }
+                    },
 
                         key = { it.bedId }
                     ) { bed ->
@@ -249,7 +253,7 @@ fun BedsScreenContent(
                                         color = MaterialTheme.colorScheme.secondary
                                     )
                                     Text(
-                                        text = "Available: ${bed.availableUnits}",
+                                        text = "${bed.availability} : ${bed.availableUnits}",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.secondary
                                     )
@@ -369,7 +373,7 @@ fun BedsScreenContent(
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Text(
-                                text = "Available: ${bed.availableUnits}",
+                                text = "${bed.availability} : ${bed.availableUnits}",
                                 color = MaterialTheme.colorScheme.secondary,
                                 style = MaterialTheme.typography.bodyLarge
                             )
@@ -392,7 +396,8 @@ fun BedsScreenContentPreview() {
             purpose = "Emergency",
             features = listOf("Ventilator", "Oxygen"),
             perDayBedPriceINR = "5000",
-            availableUnits = "3"
+            availableUnits = "3",
+            availability = "Available"
         ),
         Bed(
             bedId = "bed2",
@@ -400,7 +405,8 @@ fun BedsScreenContentPreview() {
             purpose = "Routine Care",
             features = listOf("Bedside Table", "TV", "Bedside Table", "TV"),
             perDayBedPriceINR = "1500",
-            availableUnits = "5"
+            availableUnits = "5",
+            availability = "Available"
         ),
         Bed(
             bedId = "bed3",
@@ -408,7 +414,8 @@ fun BedsScreenContentPreview() {
             purpose = "Post-Surgery",
             features = listOf("Shared Bathroom", "Refrigerator", "Shared Bathroom", "Refrigerator"),
             perDayBedPriceINR = "2500",
-            availableUnits = "2"
+            availableUnits = "2",
+            availability = "Available"
         )
     )
     MedEaseTheme {

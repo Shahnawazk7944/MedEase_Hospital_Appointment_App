@@ -253,6 +253,39 @@ class Validator {
         return null
     }
 
+    fun validatePricePerDay(price: String): ValidationError? {
+        if (price.isBlank()) {
+            return ValidationError("Price cannot be empty")
+        }
+        if (!price.all { it.isDigit() }) {
+            return ValidationError("Price must contain only digits")
+        }
+        return null
+
+    }
+    fun validateAvailability(availability: String): ValidationError? {
+        if (availability.isBlank()) {
+            return ValidationError("Availability cannot be empty")
+        }
+        if (availability.length < 3) {
+            return ValidationError("Availability must be at least 3 characters long")
+        }
+        if (availability.any { it.isDigit() }) {
+            return ValidationError("Availability should not contain any digits")
+        }
+        return null
+    }
+    fun validateAvailableUnits(units: String): ValidationError? {
+        if (units.isBlank()) {
+            return ValidationError("Units cannot be empty")
+        }
+        if (!units.all { it.isDigit() }) {
+            return ValidationError("Units must contain only digits")
+        }
+        return null
+
+    }
+
     private fun String.isValidEmail(): Boolean {
         return Patterns.EMAIL_ADDRESS.matcher(this).matches()
     }

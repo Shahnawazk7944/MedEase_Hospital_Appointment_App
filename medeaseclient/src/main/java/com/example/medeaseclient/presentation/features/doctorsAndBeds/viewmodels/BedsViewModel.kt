@@ -78,6 +78,25 @@ class BedsViewModel @Inject constructor(
                     )
                 }
             }
+
+            is BedsEvents.AvailabilityChanged -> {
+                val error = validator.validateAvailability(event.newValue)
+                _state.update {
+                    it.copy(availability = event.newValue, availabilityError = error?.message)
+                }
+            }
+            is BedsEvents.AvailableUnitsChanged -> {
+                val error = validator.validateAvailableUnits(event.newValue)
+                _state.update {
+                    it.copy(availableUnits = event.newValue, availableUnitsError = error?.message)
+                }
+            }
+            is BedsEvents.PerDayPriceChanged ->{
+                val error = validator.validatePricePerDay(event.newValue)
+                _state.update {
+                    it.copy(perDayBedPriceINR = event.newValue, perDayBedPriceINRError = error?.message)
+                }
+            }
         }
     }
 
@@ -155,7 +174,6 @@ class BedsViewModel @Inject constructor(
                 .onRight { bedUpdated ->
                     delay(1000)
                     _state.update { it.copy(loading = false, bedsSuccess = bedUpdated) }
-                    _state.update { it.resetUpdateBedForm() }
                 }.onLeft { failure ->
                     _state.update {
                         it.copy(
@@ -216,6 +234,10 @@ sealed class BedsEvents {
     data class DeleteBed(val hospitalId: String, val bedId: String) : BedsEvents()
     data object ResetBedsSuccess : BedsEvents()
     data object ResetBedsFailure : BedsEvents()
+
+    data class PerDayPriceChanged(val newValue: String) : BedsEvents()
+    data class AvailabilityChanged(val newValue: String) : BedsEvents()
+    data class AvailableUnitsChanged(val newValue: String) : BedsEvents()
 }
 
 fun BedsStates.isAddBedFormValid(): Boolean {
@@ -223,19 +245,4 @@ fun BedsStates.isAddBedFormValid(): Boolean {
             availableUnits.isNotBlank() &&
             perDayBedPriceINRError == null && availabilityError == null &&
             availableUnitsError == null
-}
-
-fun BedsStates.resetUpdateBedForm(): BedsStates {
-    return this.copy(
-        bedId = "",
-        bedType = "",
-        purpose = "",
-        features = emptyList(),
-        perDayBedPriceINR = "",
-        availability = "",
-        availableUnits = "",
-        perDayBedPriceINRError = null,
-        availabilityError = null,
-        availableUnitsError = null,
-    )
 }

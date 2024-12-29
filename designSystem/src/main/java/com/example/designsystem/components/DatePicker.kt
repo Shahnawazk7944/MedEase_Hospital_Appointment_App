@@ -28,7 +28,7 @@ fun SelectDate(
     onDateSelected: (String) -> Unit,
 ) {
     val datePickerState = rememberDatePickerState(
-       selectableDates = PastOrPresentSelectableDates
+       //selectableDates = PastOrPresentSelectableDates
     )
     DatePickerDialog(
         shape = RoundedCornerShape(MaterialTheme.spacing.large),
