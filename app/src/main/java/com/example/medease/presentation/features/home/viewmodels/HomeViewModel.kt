@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medease.data.repository.auth.UserDataStoreRepository
 import com.example.medease.data.repository.home.UserHomeRepository
-import com.example.medease.presentation.features.home.viewmodels.events.HomeEvents
-import com.example.medease.presentation.features.home.viewmodels.events.HomeStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

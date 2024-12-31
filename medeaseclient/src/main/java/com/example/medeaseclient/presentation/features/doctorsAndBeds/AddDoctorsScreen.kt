@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.DataExploration
+import androidx.compose.material.icons.filled.DataSaverOn
 import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material.icons.filled.Person
@@ -113,6 +114,7 @@ fun AddDoctorsScreen(
                         hospitalId = state.hospitalId,
                         name = state.doctorName,
                         specialist = state.specialist,
+                        treatedSymptoms = state.treatedSymptoms,
                         experience = state.experience,
                         availabilityFrom = state.from,
                         availabilityTo = state.to,
@@ -130,6 +132,7 @@ fun AddDoctorsScreen(
                     hospitalId = state.hospitalId,
                     name = state.doctorName,
                     specialist = state.specialist,
+                    treatedSymptoms = state.treatedSymptoms,
                     experience = state.experience,
                     availabilityFrom = state.from,
                     availabilityTo = state.to,
@@ -236,6 +239,29 @@ fun AddDoctorsScreenContent(
                 },
                 error = state.specialistError,
                 maxLines = 1
+            )
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            OutlinedInputField(
+                value = state.treatedSymptoms,
+                onChange = {
+                    events(DoctorsEvents.TreatedSymptomsChanged(it))
+                },
+                label = "Treated Symptoms",
+                placeholder = {
+                    Text(
+                        text = "Headache, Migraine, Memory loss",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.DataSaverOn,
+                        contentDescription = "Symptoms icon",
+                        modifier = Modifier.size(20.dp)
+                    )
+                },
+                error = state.treatedSymptomsError,
             )
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
             OutlinedInputField(

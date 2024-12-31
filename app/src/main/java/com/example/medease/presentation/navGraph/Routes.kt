@@ -9,5 +9,10 @@ sealed class Routes {
     //Home
     @Serializable object HomeScreen : Routes()
 
+    //User Options
+    @Serializable data class MyAppointmentsScreen(val userId: String) : Routes()
+    @Serializable data class HealthRecordsScreen(val userId: String) : Routes()
+    @Serializable data class TransactionsScreen(val userId: String) : Routes()
+    @Serializable data class ProfileScreen(val userId: String) : Routes()
 
 }

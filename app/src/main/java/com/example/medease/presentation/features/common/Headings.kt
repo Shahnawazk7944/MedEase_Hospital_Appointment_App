@@ -42,11 +42,12 @@ fun AuthHeadings(
 
 @Composable
 fun HomeHeadings(
+    modifier: Modifier = Modifier,
     heading: String,
     subHeading: String
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
