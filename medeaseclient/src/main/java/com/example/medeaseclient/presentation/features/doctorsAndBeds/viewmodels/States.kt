@@ -16,6 +16,7 @@ data class DoctorsStates(
     val hospitalId: String = "",
     val doctorName: String = "",
     val specialist: String = "",
+    val treatedSymptoms: String = "",
     val experience: String = "",
     val from: String = "",
     val to: String = "",
@@ -24,6 +25,7 @@ data class DoctorsStates(
     val emergency: String = "",
     val doctorNameError: String? = null,
     val specialistError: String? = null,
+    val treatedSymptomsError: String? = null,
     val experienceError: String? = null,
     val fromError: String? = null,
     val toError: String? = null,
@@ -42,6 +44,7 @@ sealed class DoctorsEvents {
     data object ResetDoctorsFailure : DoctorsEvents()
     data class DoctorNameChanged(val newValue: String) : DoctorsEvents()
     data class SpecialistChanged(val newValue: String) : DoctorsEvents()
+    data class TreatedSymptomsChanged(val newValue: String) : DoctorsEvents()
     data class ExperienceChanged(val newValue: String) : DoctorsEvents()
     data class FromChanged(val newValue: String) : DoctorsEvents()
     data class ToChanged(val newValue: String) : DoctorsEvents()
@@ -51,10 +54,10 @@ sealed class DoctorsEvents {
 }
 
 fun DoctorsStates.isAddDoctorFormValid(): Boolean {
-    return doctorName.isNotBlank() && specialist.isNotBlank() && experience.isNotBlank() &&
+    return doctorName.isNotBlank() && specialist.isNotBlank() && experience.isNotBlank() && treatedSymptoms.isNotBlank() &&
             from.isNotBlank() && to.isNotBlank() && genAvail.isNotBlank() &&
             currAvail.isNotBlank() && emergency.isNotBlank() &&
-            doctorNameError == null && specialistError == null && experienceError == null &&
+            doctorNameError == null && specialistError == null && treatedSymptomsError == null && experienceError == null &&
             fromError == null && toError == null && genAvailError == null &&
             currAvailError == null && emergencyError == null
 }

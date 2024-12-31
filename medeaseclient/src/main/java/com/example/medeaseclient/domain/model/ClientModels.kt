@@ -23,7 +23,8 @@ data class Doctor(
     val availabilityTo: String = "",
     val generalAvailability: String = "",
     val currentAvailability: String = "",
-    val emergencyAvailability: String = ""
+    val emergencyAvailability: String = "",
+    val treatedSymptoms: String = "",
 )
 
 @Serializable

@@ -172,6 +172,13 @@ class Validator {
         return null
     }
 
+    fun validateTreatedSymptoms(treatedSymptoms: String): ValidationError? {
+        if (treatedSymptoms.isBlank()) {
+            return ValidationError("Treated symptoms cannot be empty")
+        }
+        return null
+    }
+
     fun validateExperience(experience: String): ValidationError? {
         if (experience.isBlank()) {
             return ValidationError("Experience cannot be empty")
@@ -181,6 +188,7 @@ class Validator {
         }
         return null
     }
+
     fun validateFrom(fromDate: String, toDate: String): ValidationError? {
         if (fromDate.isBlank()) {
             return ValidationError("From Date cannot be empty")
@@ -263,6 +271,7 @@ class Validator {
         return null
 
     }
+
     fun validateAvailability(availability: String): ValidationError? {
         if (availability.isBlank()) {
             return ValidationError("Availability cannot be empty")
@@ -275,6 +284,7 @@ class Validator {
         }
         return null
     }
+
     fun validateAvailableUnits(units: String): ValidationError? {
         if (units.isBlank()) {
             return ValidationError("Units cannot be empty")

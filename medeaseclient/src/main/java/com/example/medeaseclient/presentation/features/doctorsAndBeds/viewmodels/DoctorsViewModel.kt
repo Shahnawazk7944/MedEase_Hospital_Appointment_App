@@ -68,6 +68,7 @@ class DoctorsViewModel @Inject constructor(
                         hospitalId = event.doctor.hospitalId,
                         doctorName = event.doctor.name,
                         specialist = event.doctor.specialist,
+                        treatedSymptoms = event.doctor.treatedSymptoms,
                         experience = event.doctor.experience,
                         from = event.doctor.availabilityFrom,
                         to = event.doctor.availabilityTo,
@@ -105,6 +106,16 @@ class DoctorsViewModel @Inject constructor(
                     it.copy(
                         emergency = event.newValue,
                         emergencyError = error?.message
+                    )
+                }
+            }
+
+            is DoctorsEvents.TreatedSymptomsChanged -> {
+                val error = validator.validateTreatedSymptoms(event.newValue)
+                _state.update {
+                    it.copy(
+                        treatedSymptoms = event.newValue,
+                        treatedSymptomsError = error?.message
                     )
                 }
             }
