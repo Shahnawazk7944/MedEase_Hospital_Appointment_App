@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.medease.data.repository.auth.UserDataStoreRepository
 import com.example.medease.data.repository.home.UserHomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         homeEvents(HomeEvents.GetUserId)
+        homeEvents(HomeEvents.FetchHospitalsWithDoctors)
     }
 
     fun homeEvents(event: HomeEvents) {
@@ -48,6 +50,35 @@ class HomeViewModel @Inject constructor(
                 viewModelScope.launch {
                     getUserProfile(event.userId)
                 }
+            }
+
+            is HomeEvents.SearchQueryChange -> {
+                _homeState.update { it.copy(searchQuery = event.newQuery) }
+            }
+
+            HomeEvents.FetchHospitalsWithDoctors -> {
+                fetchHospitalsWithDoctors()
+            }
+
+            is HomeEvents.OnBookAppointmentClick -> {
+                _homeState.update {
+                    it.copy(
+                        selectedHospitalWithDoctors = event.hospitalWithDoctors,
+                        selectedDoctor = event.doctor
+                    )
+                }
+            }
+
+            is HomeEvents.BookAppointment -> {}
+            is HomeEvents.OnSelectBedClick -> {
+                _homeState.update {
+                    it.copy(
+                        selectedBed = event.bed
+                    )
+                }
+            }
+            is HomeEvents.fetchHospitalBeds -> {
+                fetchHospitalBeds(event.hospitalId)
             }
         }
     }
@@ -91,10 +122,56 @@ class HomeViewModel @Inject constructor(
         userHomeRepository.getUserProfile(userId).onRight { userProfile ->
             _homeState.update { it.copy(userProfile = userProfile, loading = false) }
         }.onLeft { failure ->
-            Log.d("-------", "getUserProfile: $failure")
+
             _homeState.update { it.copy(loading = false, userProfileFailure = failure) }
             delay(4000)
             _homeState.update { it.copy(userProfileFailure = null) }
+        }
+    }
+
+    private fun fetchHospitalsWithDoctors() {
+        _homeState.update { it.copy(fetchingHospitalsWithDoctors = true) }
+        viewModelScope.launch(Dispatchers.IO) {
+            userHomeRepository.fetchDoctorsWithHospitals().collect {
+                it.onRight { hospitalsWithDoctors ->
+                    _homeState.update {
+                        it.copy(
+                            hospitalsWithDoctors = hospitalsWithDoctors,
+                            fetchingHospitalsWithDoctors = false,
+                        )
+                    }
+                }.onLeft { failure ->
+                    _homeState.update {
+                        it.copy(
+                            fetchingHospitalsWithDoctors = false,
+                            userOperationsFailure = failure
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun fetchHospitalBeds(hospitalId: String) {
+        _homeState.update { it.copy(fetchingHospitalsBeds = true) }
+        viewModelScope.launch(Dispatchers.IO) {
+            userHomeRepository.fetchBedsFromHospital(hospitalId).collect {
+                it.onRight { hospitalBeds ->
+                    _homeState.update {
+                        it.copy(
+                            selectedHospitalBeds = hospitalBeds,
+                            fetchingHospitalsBeds = false,
+                        )
+                    }
+                }.onLeft { failure ->
+                    _homeState.update {
+                        it.copy(
+                            fetchingHospitalsBeds = false,
+                            userOperationsFailure = failure
+                        )
+                    }
+                }
+            }
         }
     }
 }
