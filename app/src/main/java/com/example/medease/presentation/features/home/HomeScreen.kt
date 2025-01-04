@@ -538,7 +538,6 @@ fun BookingConformationBottomSheet(
                             CircularProgressIndicator(
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(40.dp),
-                                strokeWidth = 4.dp
                             )
                         }
                     }
