@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.DataExploration
 import androidx.compose.material.icons.filled.DataSaverOn
@@ -115,11 +116,14 @@ fun AddDoctorsScreen(
                         name = state.doctorName,
                         specialist = state.specialist,
                         treatedSymptoms = state.treatedSymptoms,
+                        generalFees = state.generalFees,
+                        careFees = state.careFees,
+                        emergencyFees = state.emergencyFees,
                         experience = state.experience,
                         availabilityFrom = state.from,
                         availabilityTo = state.to,
                         generalAvailability = state.genAvail,
-                        currentAvailability = state.currAvail,
+                        careAvailability = state.careAvail,
                         emergencyAvailability = state.emergency
                     )
                 )
@@ -133,11 +137,14 @@ fun AddDoctorsScreen(
                     name = state.doctorName,
                     specialist = state.specialist,
                     treatedSymptoms = state.treatedSymptoms,
+                    generalFees = state.generalFees,
+                    careFees = state.careFees,
+                    emergencyFees = state.emergencyFees,
                     experience = state.experience,
                     availabilityFrom = state.from,
                     availabilityTo = state.to,
                     generalAvailability = state.genAvail,
-                    currentAvailability = state.currAvail,
+                    careAvailability = state.careAvail,
                     emergencyAvailability = state.emergency
                 )
             )
@@ -393,11 +400,11 @@ fun AddDoctorsScreenContent(
                     )
                     Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                     OutlinedInputField(
-                        value = state.currAvail,
+                        value = state.careAvail,
                         onChange = {
-                            events(DoctorsEvents.CurrAvailChanged(it))
+                            events(DoctorsEvents.CareAvailChanged(it))
                         },
-                        label = "Current Availability",
+                        label = "Care Availability",
                         placeholder = {
                             Text(
                                 text = "50",
@@ -415,7 +422,7 @@ fun AddDoctorsScreenContent(
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         ),
-                        error = state.currAvailError,
+                        error = state.careAvailError,
                         maxLines = 1
                     )
                     Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
@@ -443,6 +450,96 @@ fun AddDoctorsScreenContent(
                             keyboardType = KeyboardType.Number
                         ),
                         error = state.emergencyError,
+                        maxLines = 1
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    OutlinedInputField(
+                        value = state.generalFees,
+                        onChange = {
+                            events(DoctorsEvents.GeneralFeesChanged(it))
+                        },
+                        label = "General Fees",
+                        placeholder = {
+                            Text(
+                                text = "100",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        },
+                        modifier = Modifier.weight(1f),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.AttachMoney,
+                                contentDescription = "Number icon",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        error = state.generalFeesError,
+                        maxLines = 1
+                    )
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    OutlinedInputField(
+                        value = state.careFees,
+                        onChange = {
+                            events(DoctorsEvents.CareFeesChanged(it))
+                        },
+                        label = "Care Fees",
+                        placeholder = {
+                            Text(
+                                text = "350",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        },
+                        modifier = Modifier.weight(1f),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.AttachMoney,
+                                contentDescription = "Number icon",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        error = state.careFeesError,
+                        maxLines = 1
+                    )
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    OutlinedInputField(
+                        value = state.emergencyFees,
+                        onChange = {
+                            events(DoctorsEvents.EmergencyFeesChanged(it))
+                        },
+                        label = "Emergency Fees",
+                        placeholder = {
+                            Text(
+                                text = "500",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        },
+                        modifier = Modifier.weight(1f),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.AttachMoney,
+                                contentDescription = "Number icon",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        error = state.emergencyFeesError,
                         maxLines = 1
                     )
                 }

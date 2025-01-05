@@ -172,6 +172,16 @@ class Validator {
         return null
     }
 
+    fun validateFees(fees: String): ValidationError? {
+        if (fees.isBlank()) {
+            return ValidationError("Fees cannot be empty")
+        }
+        if (!fees.all { it.isDigit() }) {
+            return ValidationError("Fees must contain only digits")
+        }
+        return null
+    }
+
     fun validateTreatedSymptoms(treatedSymptoms: String): ValidationError? {
         if (treatedSymptoms.isBlank()) {
             return ValidationError("Treated symptoms cannot be empty")

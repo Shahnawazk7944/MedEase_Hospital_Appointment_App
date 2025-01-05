@@ -11,6 +11,7 @@ import com.example.medeaseclient.data.util.HOSPITALS_COLLECTION
 import com.example.medeaseclient.domain.model.Bed
 import com.example.medeaseclient.domain.model.Doctor
 import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -56,6 +57,24 @@ class ClientDoctorRepositoryImpl @Inject constructor(
     }
 
     override suspend fun fetchDoctors(): Flow<Either<DoctorsFailure, List<Doctor>>> {
+
+        // TEMPORARY CODE TO UPDATE DOCTORS WITH NEW FIELDS
+        /*try {
+            val doctorsSnapshot: QuerySnapshot = database.get().await()
+            for (document in doctorsSnapshot.documents) {
+                val doctor = document.toObject(Doctor::class.java)
+                if (doctor != null) {
+                    val updatedDoctor = doctor.copy(
+                        generalFees = "0",
+                        careFees = "0",
+                        emergencyFees = "0"
+                    )
+                    database.document(document.id).set(updatedDoctor).await()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("DoctorRepository", "Error updating doctors: ${e.message}")
+        }*/
         return callbackFlow {
             val listenerRegistration = database.addSnapshotListener { snapshot, error ->
                 if (error != null) {

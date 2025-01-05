@@ -22,7 +22,7 @@ internal val onErrorContainerLight = Color(0xFF350300)
 internal val backgroundLight = Color(0xFFf2f2f2)
 internal val onBackgroundLight = Color(0xFFFFFFFF)
 
-internal val surfaceLight = Color(0xFFFFFFFF)
+internal val surfaceLight = Color(0xFFf8f9fa)
 internal val onSurfaceLight = Color(0xFF191D23)
 internal val surfaceVariantLight = Color(0xFFE0E3E3)
 internal val onSurfaceVariantLight = Color(0xFF5D5A6F)

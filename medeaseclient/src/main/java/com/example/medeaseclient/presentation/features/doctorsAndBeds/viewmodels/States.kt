@@ -2,7 +2,6 @@ package com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodel
 
 import com.example.medeaseclient.data.repository.doctor.DoctorsFailure
 import com.example.medeaseclient.data.repository.doctor.DoctorsSuccess
-import com.example.medeaseclient.domain.model.Bed
 import com.example.medeaseclient.domain.model.Doctor
 
 data class DoctorsStates(
@@ -21,8 +20,12 @@ data class DoctorsStates(
     val from: String = "",
     val to: String = "",
     val genAvail: String = "",
-    val currAvail: String = "",
+    val careAvail: String = "",
     val emergency: String = "",
+    val generalFees: String = "",
+    val careFees: String = "",
+    val emergencyFees: String = "",
+
     val doctorNameError: String? = null,
     val specialistError: String? = null,
     val treatedSymptomsError: String? = null,
@@ -30,8 +33,11 @@ data class DoctorsStates(
     val fromError: String? = null,
     val toError: String? = null,
     val genAvailError: String? = null,
-    val currAvailError: String? = null,
+    val careAvailError: String? = null,
     val emergencyError: String? = null,
+    val generalFeesError: String? = null,
+    val careFeesError: String? = null,
+    val emergencyFeesError: String? = null
 )
 
 sealed class DoctorsEvents {
@@ -49,17 +55,21 @@ sealed class DoctorsEvents {
     data class FromChanged(val newValue: String) : DoctorsEvents()
     data class ToChanged(val newValue: String) : DoctorsEvents()
     data class GenAvailChanged(val newValue: String) : DoctorsEvents()
-    data class CurrAvailChanged(val newValue: String) : DoctorsEvents()
+    data class CareAvailChanged(val newValue: String) : DoctorsEvents()
     data class EmergencyChanged(val newValue: String) : DoctorsEvents()
+    data class GeneralFeesChanged(val newValue: String) : DoctorsEvents()
+    data class CareFeesChanged(val newValue: String) : DoctorsEvents()
+    data class EmergencyFeesChanged(val newValue: String) : DoctorsEvents()
 }
 
 fun DoctorsStates.isAddDoctorFormValid(): Boolean {
-    return doctorName.isNotBlank() && specialist.isNotBlank() && experience.isNotBlank() && treatedSymptoms.isNotBlank() &&
+    return doctorName.isNotBlank() && specialist.isNotBlank() && experience.isNotBlank() && generalFees.isNotBlank()
+            && careFees.isNotBlank() && emergencyFees.isNotBlank() && treatedSymptoms.isNotBlank() &&
             from.isNotBlank() && to.isNotBlank() && genAvail.isNotBlank() &&
-            currAvail.isNotBlank() && emergency.isNotBlank() &&
+            careAvail.isNotBlank() && emergency.isNotBlank() &&
             doctorNameError == null && specialistError == null && treatedSymptomsError == null && experienceError == null &&
             fromError == null && toError == null && genAvailError == null &&
-            currAvailError == null && emergencyError == null
+            careAvailError == null && emergencyError == null && generalFeesError == null && careFeesError == null && emergencyFeesError == null
 }
 
 fun DoctorsStates.resetAddDoctorForm(): DoctorsStates {
@@ -70,15 +80,20 @@ fun DoctorsStates.resetAddDoctorForm(): DoctorsStates {
         from = "",
         to = "",
         genAvail = "",
-        currAvail = "",
+        careAvail = "",
         emergency = "",
+        generalFees = "",
+        careFees = "",
+        emergencyFees = "",
+        treatedSymptoms = "",
         doctorNameError = null,
         specialistError = null,
         experienceError = null,
         fromError = null,
         toError = null,
         genAvailError = null,
-        currAvailError = null,
-        emergencyError = null
+        careAvailError = null,
+        emergencyError = null,
+        treatedSymptomsError = null
     )
 }
