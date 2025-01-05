@@ -21,10 +21,13 @@ data class Doctor(
     val experience: String = "",
     val availabilityFrom: String = "",
     val availabilityTo: String = "",
-    val generalAvailability: String = "",
-    val currentAvailability: String = "",
     val emergencyAvailability: String = "",
     val treatedSymptoms: String = "",
+    val generalAvailability: String = "",
+    val careAvailability: String = "",
+    val generalFees: String = "",
+    val careFees: String = "",
+    val emergencyFees: String = "",
 )
 
 @Serializable

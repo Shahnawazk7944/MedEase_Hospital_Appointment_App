@@ -23,7 +23,7 @@ val sampleHospitals = listOf(
                 treatedSymptoms = "Severe Headaches, Seizures",
                 experience = "5",
                 generalAvailability = "10",
-                currentAvailability = "42",
+                careAvailability = "42",
                 emergencyAvailability = "20",
                 availabilityFrom = "28-12-2023",
                 availabilityTo = "29-12-2023"
@@ -44,7 +44,7 @@ val sampleHospitals = listOf(
                 availabilityFrom = "28-12-2024",
                 availabilityTo = "29-12-2024",
                 generalAvailability = "Mon-Fri",
-                currentAvailability = "Available",
+                careAvailability = "Available",
                 emergencyAvailability = "Yes",
                 treatedSymptoms = " Nausea, Vomiting"
             )
@@ -63,7 +63,7 @@ val sampleHospitals = listOf(
                 treatedSymptoms = "Chest pain, shortness of breath",
                 experience = "12",
                 generalAvailability = "Mon-Sat",
-                currentAvailability = "Available",
+                careAvailability = "Available",
                 emergencyAvailability = "Yes",
                 availabilityFrom = "01-01-2024",
                 availabilityTo = "31-01-2024"
@@ -84,7 +84,7 @@ val sampleHospitals = listOf(
                 availabilityFrom = "28-12-2024",
                 availabilityTo = "29-12-2024",
                 generalAvailability = "Mon-Fri",
-                currentAvailability = "Available",
+                careAvailability = "Available",
                 emergencyAvailability = "Yes",
                 treatedSymptoms = "pregnancy, fatigue"
             )
@@ -112,6 +112,12 @@ data class HomeStates(
     val selectedDoctor: Doctor? = null,
     val selectedHospitalBeds: List<Bed> = emptyList(),
     val selectedBed: Bed? = null,
+
+    val bookingDate: String = "",
+    val bookingTime: String = "",
+    val selectedQuota: String = "general",
+    val bookingDateError: String? = null,
+    val bookingTimeError: String? = null
 )
 
 sealed class HomeEvents {
@@ -134,5 +140,8 @@ sealed class HomeEvents {
         val bed: Bed? = null
     ) : HomeEvents()
 
+    data class BookingDateChange(val newDate: String) : HomeEvents()
+    data class BookingTimeChange(val newTime: String) : HomeEvents()
+    data class BookingQuotaChange(val newQuota: String) : HomeEvents()
 
 }

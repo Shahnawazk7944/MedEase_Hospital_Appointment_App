@@ -80,6 +80,17 @@ class HomeViewModel @Inject constructor(
             is HomeEvents.fetchHospitalBeds -> {
                 fetchHospitalBeds(event.hospitalId)
             }
+
+            is HomeEvents.BookingDateChange -> {
+                _homeState.update { it.copy(bookingDate = event.newDate) }
+            }
+            is HomeEvents.BookingTimeChange -> {
+                _homeState.update { it.copy(bookingTime = event.newTime) }
+            }
+
+            is HomeEvents.BookingQuotaChange -> {
+                _homeState.update { it.copy(selectedQuota = event.newQuota) }
+            }
         }
     }
 

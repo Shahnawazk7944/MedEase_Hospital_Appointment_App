@@ -1,6 +1,5 @@
 package com.example.medease.presentation.features.home.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -194,7 +193,13 @@ fun HospitalDoctorCard(
                     color = MaterialTheme.colorScheme.secondary
                 )
                 Text(
-                    text = "General: ${doctor.generalAvailability}/${doctor.currentAvailability}",
+                    text = "General: ${doctor.generalAvailability}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                Text(
+                    text = "Care: ${doctor.careAvailability}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.tertiary
                 )
@@ -205,6 +210,38 @@ fun HospitalDoctorCard(
                     color = MaterialTheme.colorScheme.errorContainer
                 )
             }
+
+            //Price
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                Text(
+                    text = "Fees - ",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Text(
+                    text = "General: ₹${doctor.generalFees}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                Text(
+                    text = "Care: ₹${doctor.careFees}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                Text(
+                    text = "Emergency: ₹${doctor.emergencyFees}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.errorContainer
+                )
+            }
+
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
             Row(
                 verticalAlignment = Alignment.CenterVertically,

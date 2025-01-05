@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -285,21 +286,24 @@ fun DoctorsScreenContent(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             AvailabilityItem(
-                                "General",
-                                doctor.generalAvailability,
-                                MaterialTheme.colorScheme.onPrimaryContainer,
+                                label = "General",
+                                value = doctor.generalAvailability,
+                                fees = doctor.generalFees,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 icon = Icons.Default.LockClock
                             )
                             AvailabilityItem(
-                                "Current",
-                                doctor.currentAvailability,
-                                MaterialTheme.colorScheme.onTertiary,
+                                label = "Care",
+                                value = doctor.careAvailability,
+                                fees = doctor.careFees,
+                                color = MaterialTheme.colorScheme.onTertiary,
                                 icon = Icons.Default.Update
                             )
                             AvailabilityItem(
-                                "Emergency",
-                                doctor.emergencyAvailability,
-                                MaterialTheme.colorScheme.errorContainer,
+                                label = "Emergency",
+                                value = doctor.emergencyAvailability,
+                                fees = doctor.emergencyFees,
+                                color = MaterialTheme.colorScheme.errorContainer,
                                 icon = Icons.Default.Emergency
                             )
                         }
@@ -311,7 +315,7 @@ fun DoctorsScreenContent(
 }
 
 @Composable
-fun AvailabilityItem(label: String, value: String, color: Color, icon: ImageVector) {
+fun AvailabilityItem(label: String, value: String, fees: String, color: Color, icon: ImageVector) {
     Card(
         modifier = Modifier
             .wrapContentHeight()
@@ -367,6 +371,27 @@ fun AvailabilityItem(label: String, value: String, color: Color, icon: ImageVect
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = MaterialTheme.spacing.extraSmall),
+                color = MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.2f),
+                thickness = 1.dp
+            )
+            Text(
+                text = "Fees",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onTertiary,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = fees,
+                style = MaterialTheme.typography.titleMedium,
+                color = color,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -386,7 +411,7 @@ fun DoctorsScreenContentPreview() {
                     availabilityFrom = "01-01-2023",
                     availabilityTo = "31-12-2023",
                     generalAvailability = "80",
-                    currentAvailability = "50",
+                    careAvailability = "50",
                     emergencyAvailability = "20"
                 ),
                 Doctor(
@@ -398,7 +423,7 @@ fun DoctorsScreenContentPreview() {
                     availabilityFrom = "01-01-2023",
                     availabilityTo = "31-12-2023",
                     generalAvailability = "70",
-                    currentAvailability = "60",
+                    careAvailability = "60",
                     emergencyAvailability = "30"
                 ),
                 Doctor(
@@ -409,7 +434,7 @@ fun DoctorsScreenContentPreview() {
                     availabilityFrom = "01-01-2023",
                     availabilityTo = "31-12-2023",
                     generalAvailability = "80",
-                    currentAvailability = "50",
+                    careAvailability = "50",
                     emergencyAvailability = "20"
                 ),
                 Doctor(
@@ -421,7 +446,7 @@ fun DoctorsScreenContentPreview() {
                     availabilityFrom = "01-01-2023",
                     availabilityTo = "31-12-2023",
                     generalAvailability = "70",
-                    currentAvailability = "60",
+                    careAvailability = "60",
                     emergencyAvailability = "30"
                 ),
 

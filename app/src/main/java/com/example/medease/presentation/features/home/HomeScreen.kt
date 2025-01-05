@@ -2,17 +2,16 @@ package com.example.medease.presentation.features.home
 
 
 import Routes
-import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,8 +29,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
@@ -45,6 +47,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -66,11 +70,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.example.designsystem.components.OutlinedDateInputField
 import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
@@ -245,7 +249,9 @@ fun HomeContent(
         },
     ) { paddingValues ->
         val scope = rememberCoroutineScope()
-        val sheetState = rememberModalBottomSheetState()
+        val sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
         var showBottomSheet by remember { mutableStateOf(false) }
 
         if (state.loggingOut || state.loading) {
@@ -363,6 +369,7 @@ fun HomeContent(
                     hospitalWithDoctors = state.selectedHospitalWithDoctors!!,
                     doctor = state.selectedDoctor!!,
                     state = state,
+                    events = event,
                     closeBottomSheet = {
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
@@ -381,11 +388,12 @@ fun BookingConformationBottomSheet(
     hospitalWithDoctors: HospitalWithDoctors,
     doctor: Doctor,
     state: HomeStates,
+    events: (HomeEvents) -> Unit,
     closeBottomSheet: () -> Unit
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(MaterialTheme.spacing.large),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -401,7 +409,7 @@ fun BookingConformationBottomSheet(
                 .fillMaxWidth()
                 .padding(bottom = MaterialTheme.spacing.medium),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onBackground),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(MaterialTheme.spacing.large)
         ) {
             LazyColumn(modifier = Modifier.padding(16.dp)) {
@@ -429,7 +437,7 @@ fun BookingConformationBottomSheet(
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
                 }
 
-                // Doctor Details -------------------------------------
+                // Doctor Details ------------------------------------
                 item(key = "doctor_details_1") {
                     Text(
                         text = "${doctor.name} (Exp: ${doctor.experience}yrs)",
@@ -454,6 +462,7 @@ fun BookingConformationBottomSheet(
 
                 // Availability -------------------------------------
                 item(key = "doctor_details_3") {
+                    // Availability
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -466,13 +475,49 @@ fun BookingConformationBottomSheet(
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = "General: ${doctor.generalAvailability}/${doctor.currentAvailability}",
+                            text = "General: ${doctor.generalAvailability}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                        Text(
+                            text = "Care: ${doctor.careAvailability}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.tertiary
                         )
                         Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                         Text(
                             text = "Emergency: ${doctor.emergencyAvailability}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.errorContainer
+                        )
+                    }
+                    //Price
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    ) {
+                        Text(
+                            text = "Fees - ",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "General: ₹${doctor.generalFees}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                        Text(
+                            text = "Care: ₹${doctor.careFees}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                        Text(
+                            text = "Emergency: ₹${doctor.emergencyFees}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.errorContainer
                         )
@@ -498,6 +543,112 @@ fun BookingConformationBottomSheet(
                         )
                     }
                 }
+                item(key = "hospital_details_4.1") {
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+                        thickness = 1.dp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
+                item(key = "doctor_details_5") {
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        OutlinedDateInputField(
+                            date = state.bookingDate,
+                            onDateChange = {
+                                events(HomeEvents.BookingDateChange(it))
+                            },
+                            label = "Date",
+                            placeholder = {
+                                Text(
+                                    text = "20-01-2024",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            },
+                            modifier = Modifier.weight(1f),
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.CalendarMonth,
+                                    contentDescription = "Calendar icon",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            },
+                            error = state.bookingDateError,
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
+                        OutlinedDateInputField(
+                            date = state.bookingTime,
+                            onDateChange = {
+                                events(HomeEvents.BookingTimeChange(it))
+                            },
+                            label = "Time",
+                            placeholder = {
+                                Text(
+                                    text = "12:30",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            },
+                            modifier = Modifier.weight(1f),
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.AccessTime,
+                                    contentDescription = "Calendar icon",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            },
+                            error = state.bookingTimeError,
+                        )
+                    }
+                }
+
+                // Booking Quota Selection
+                item(key = "booking_quota_selection") {
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                    Text(
+                        text = "Select Booking Quota:",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        RadioButton(
+                            selected = state.selectedQuota == "general",
+                            onClick = { events(HomeEvents.BookingQuotaChange("general")) },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                        Text("General")
+                        RadioButton(
+                            selected = state.selectedQuota == "care",
+                            onClick = { events(HomeEvents.BookingQuotaChange("care")) },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = MaterialTheme.colorScheme.tertiary
+                            )
+                        )
+                        Text("Care")
+                        RadioButton(
+                            selected = state.selectedQuota == "emergency",
+                            onClick = { events(HomeEvents.BookingQuotaChange("emergency")) },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        )
+                        Text("Emergency")
+                    }
+                }
 
                 // Beds ---------------------------------------------
                 item(key = "hospital_details_4") {
@@ -509,12 +660,13 @@ fun BookingConformationBottomSheet(
                     Spacer(modifier = Modifier.height(6.dp))
                 }
 
+
                 // LazyRow for Beds ---------------------------------
                 item(key = "hospital_beds") {
                     Spacer(modifier = Modifier.height(6.dp))
                     if (!state.fetchingHospitalsBeds) {
                         Text(
-                            text = "Available Beds",
+                            text = if(state.selectedHospitalBeds.isNotEmpty()) "Available Beds" else "No Beds Available",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -538,11 +690,12 @@ fun BookingConformationBottomSheet(
                     } else {
                         Box(
                             contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().height(30.dp)
                         ) {
                             CircularProgressIndicator(
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(40.dp),
+                                strokeWidth = 4.dp,
+                                modifier = Modifier.size(30.dp)
                             )
                         }
                     }
@@ -691,7 +844,7 @@ fun HomeContentPreview() {
                         treatedSymptoms = "Severe Headaches, Seizures, Numbness in Limbs, Balance Problems, Spinal Pain",
                         experience = "5",
                         generalAvailability = "10",
-                        currentAvailability = "42",
+                        careAvailability = "42",
                         emergencyAvailability = "20",
                         availabilityFrom = "28-12-2024",
                         availabilityTo = "29-12-2024"
@@ -703,7 +856,7 @@ fun HomeContentPreview() {
                         availabilityFrom = "28-12-2024",
                         availabilityTo = "29-12-2024",
                         generalAvailability = "Mon-Fri",
-                        currentAvailability = "Available",
+                        careAvailability = "Available",
                         emergencyAvailability = "No",
                         treatedSymptoms = "Abdominal pain, HEADACHE, Bloating, Nausea, Vomiting, Diarrhea"
                     ),
@@ -714,7 +867,7 @@ fun HomeContentPreview() {
                         availabilityFrom = "28-12-2024",
                         availabilityTo = "29-12-2024",
                         generalAvailability = "Mon-Fri",
-                        currentAvailability = "Available",
+                        careAvailability = "Available",
                         emergencyAvailability = "Yes",
                         treatedSymptoms = "Severe Headaches, Seizures, Numbness in Limbs, Balance Problems, Spinal Pain"
                     ),
@@ -725,7 +878,7 @@ fun HomeContentPreview() {
                         availabilityFrom = "28-12-2024",
                         availabilityTo = "29-12-2024",
                         generalAvailability = "Tue-Sat",
-                        currentAvailability = "Available",
+                        careAvailability = "Available",
                         emergencyAvailability = "No",
                         treatedSymptoms = "Irregular Periods, Irregular Bowel Movements, Pelvic Pain, Pregnancy Concerns, Menopause Symptoms, Vaginal Infections"
                     )
@@ -743,7 +896,7 @@ fun HomeContentPreview() {
                         treatedSymptoms = "Severe Headaches, Seizures, Numbness in Limbs, Balance Problems, Spinal Pain",
                         experience = "5",
                         generalAvailability = "10",
-                        currentAvailability = "42",
+                        careAvailability = "42",
                         emergencyAvailability = "20",
                         availabilityFrom = "28-12-2024",
                         availabilityTo = "29-12-2024"
@@ -755,7 +908,7 @@ fun HomeContentPreview() {
                         availabilityFrom = "28-12-2024",
                         availabilityTo = "29-12-2024",
                         generalAvailability = "Mon-Fri",
-                        currentAvailability = "Available",
+                        careAvailability = "Available",
                         emergencyAvailability = "No",
                         treatedSymptoms = "Abdominal pain, HEADACHE, Bloating, Nausea, Vomiting, Diarrhea"
                     ),
@@ -766,7 +919,7 @@ fun HomeContentPreview() {
                         availabilityFrom = "28-12-2024",
                         availabilityTo = "29-12-2024",
                         generalAvailability = "Mon-Fri",
-                        currentAvailability = "Available",
+                        careAvailability = "Available",
                         emergencyAvailability = "Yes",
                         treatedSymptoms = "Severe Headaches, Seizures, Numbness in Limbs, Balance Problems, Spinal Pain"
                     ),
@@ -777,7 +930,7 @@ fun HomeContentPreview() {
                         availabilityFrom = "28-12-2024",
                         availabilityTo = "29-12-2024",
                         generalAvailability = "Tue-Sat",
-                        currentAvailability = "Available",
+                        careAvailability = "Available",
                         emergencyAvailability = "No",
                         treatedSymptoms = "Irregular Periods, Irregular Bowel Movements, Pelvic Pain, Pregnancy Concerns, Menopause Symptoms, Vaginal Infections"
                     )

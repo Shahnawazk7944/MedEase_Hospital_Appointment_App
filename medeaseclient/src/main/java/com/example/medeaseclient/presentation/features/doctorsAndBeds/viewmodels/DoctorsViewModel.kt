@@ -3,10 +3,7 @@ package com.example.medeaseclient.presentation.features.doctorsAndBeds.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medeaseclient.data.repository.doctor.ClientDoctorRepository
-import com.example.medeaseclient.data.repository.doctor.DoctorsFailure
-import com.example.medeaseclient.data.repository.doctor.DoctorsSuccess
 import com.example.medeaseclient.data.util.Validator
-import com.example.medeaseclient.domain.model.Bed
 import com.example.medeaseclient.domain.model.Doctor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -69,23 +66,26 @@ class DoctorsViewModel @Inject constructor(
                         doctorName = event.doctor.name,
                         specialist = event.doctor.specialist,
                         treatedSymptoms = event.doctor.treatedSymptoms,
+                        generalFees = event.doctor.generalFees,
+                        careFees = event.doctor.careFees,
+                        emergencyFees = event.doctor.emergencyFees,
                         experience = event.doctor.experience,
                         from = event.doctor.availabilityFrom,
                         to = event.doctor.availabilityTo,
                         genAvail = event.doctor.generalAvailability,
-                        currAvail = event.doctor.currentAvailability,
+                        careAvail = event.doctor.careAvailability,
                         emergency = event.doctor.emergencyAvailability,
                     )
                 }
             }
 
             /****************************************************************************************/
-            is DoctorsEvents.CurrAvailChanged -> {
+            is DoctorsEvents.CareAvailChanged -> {
                 val error = validator.validateCurrAvail(event.newValue)
                 _state.update {
                     it.copy(
-                        currAvail = event.newValue,
-                        currAvailError = error?.message
+                        careAvail = event.newValue,
+                        careAvailError = error?.message
                     )
                 }
             }
@@ -184,6 +184,36 @@ class DoctorsViewModel @Inject constructor(
                         toError = toError?.message,
                         from = state.value.from,
                         fromError = fromError?.message
+                    )
+                }
+            }
+
+            is DoctorsEvents.CareFeesChanged -> {
+                val error = validator.validateFees(event.newValue)
+                _state.update {
+                    it.copy(
+                        careFees = event.newValue,
+                        careFeesError = error?.message
+                    )
+                }
+            }
+
+            is DoctorsEvents.EmergencyFeesChanged -> {
+                val error = validator.validateFees(event.newValue)
+                _state.update {
+                    it.copy(
+                        emergencyFees = event.newValue,
+                        emergencyFeesError = error?.message
+                    )
+                }
+            }
+
+            is DoctorsEvents.GeneralFeesChanged -> {
+                val error = validator.validateFees(event.newValue)
+                _state.update {
+                    it.copy(
+                        generalFees = event.newValue,
+                        generalFeesError = error?.message
                     )
                 }
             }
