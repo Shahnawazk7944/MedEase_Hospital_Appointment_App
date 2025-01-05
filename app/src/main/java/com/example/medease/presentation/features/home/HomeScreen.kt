@@ -2,6 +2,7 @@ package com.example.medease.presentation.features.home
 
 
 import Routes
+import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -64,6 +66,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -506,7 +509,7 @@ fun BookingConformationBottomSheet(
                     Spacer(modifier = Modifier.height(6.dp))
                 }
 
-                // LazyRow for Beds
+                // LazyRow for Beds ---------------------------------
                 item(key = "hospital_beds") {
                     Spacer(modifier = Modifier.height(6.dp))
                     if (!state.fetchingHospitalsBeds) {
@@ -516,12 +519,14 @@ fun BookingConformationBottomSheet(
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
                         LazyRow(
+                            contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.small),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .wrapContentHeight(), // Allows dynamic height based on content
+                                .wrapContentHeight(),
                             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.large),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.Top
                         ) {
                             items(
                                 items = state.selectedHospitalBeds,
@@ -543,9 +548,7 @@ fun BookingConformationBottomSheet(
                     }
                 }
 
-
-
-                // Confirm Booking Button
+                // Confirm Booking Button ----------------------------
                 item(key = "confirm_booking_button") {
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
                     PrimaryButton(
@@ -566,8 +569,8 @@ fun BookingConformationBottomSheet(
 fun BedCard(bed: Bed) {
     Card(
         modifier = Modifier
-            .width(300.dp)
-            .wrapContentHeight()
+            .width(300.dp) // Fixed width for alignment
+            .height(230.dp) // Use the precomputed max height
             .padding(vertical = MaterialTheme.spacing.medium),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
@@ -608,8 +611,8 @@ fun BedCard(bed: Bed) {
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.fillMaxSize()
             ) {
                 Text(
                     text = "Price/Day: ₹${bed.perDayBedPriceINR}",
@@ -625,8 +628,6 @@ fun BedCard(bed: Bed) {
         }
     }
 }
-
-
 
 @Composable
 fun UserHomeOptionItem(
