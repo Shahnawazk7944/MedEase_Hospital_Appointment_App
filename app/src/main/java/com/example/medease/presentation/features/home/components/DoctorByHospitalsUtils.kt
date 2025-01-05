@@ -1,5 +1,6 @@
 package com.example.medease.presentation.features.home.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -72,23 +74,21 @@ fun List<HospitalWithDoctors>.filterBySearchQuery(searchQuery: String): List<Hos
     }
 
     return this.mapNotNull { hospitalWithDoctors ->
-        // Filter doctors matching the search query
         val matchingDoctors = hospitalWithDoctors.doctors.filter { doctor ->
             doctor.name.contains(searchQuery, ignoreCase = true) ||
                     doctor.specialist.contains(searchQuery, ignoreCase = true) ||
                     doctor.treatedSymptoms.contains(searchQuery, ignoreCase = true)
         }
 
-        // Include the hospital if either hospital details match or there are matching doctors
-        if (
-            hospitalWithDoctors.hospitalName.contains(searchQuery, ignoreCase = true) ||
+        // Check if the hospital or any of its doctors match the search query
+        if (hospitalWithDoctors.hospitalName.contains(searchQuery, ignoreCase = true) ||
             hospitalWithDoctors.hospitalCity.contains(searchQuery, ignoreCase = true) ||
             hospitalWithDoctors.hospitalPinCode.contains(searchQuery, ignoreCase = true) ||
             matchingDoctors.isNotEmpty()
         ) {
-            // Return the hospital with only the matching doctors
-            hospitalWithDoctors.copy(doctors = matchingDoctors)
+            hospitalWithDoctors.copy(doctors = if (matchingDoctors.isNotEmpty()) matchingDoctors else hospitalWithDoctors.doctors)
         } else {
+            // If the hospital and its doctors don't match, filter it out
             null
         }
     }
@@ -101,12 +101,9 @@ fun LazyListScope.hospitalDoctorCards(
     filteredHospitals: List<HospitalWithDoctors>,
     onBookAppointmentClick: (HospitalWithDoctors, Doctor) -> Unit, // Pass doctor
 ) {
-    items(
-        count = filteredHospitals.size,
-        key = { index -> "hospital_${filteredHospitals[index].hospitalName}_$index" }
-    ) { index ->
-        val hospitalWithDoctors = filteredHospitals[index]
-        hospitalWithDoctors.doctors.forEach { doctor ->
+    items(filteredHospitals, key = { "hospital_id_${it.hospitalId}_${it.hospitalName}" }) { hospitalWithDoctors ->
+        // Display HospitalDoctorCard for each doctor in the hospital
+        for (doctor in hospitalWithDoctors.doctors) {
             HospitalDoctorCard(
                 hospitalName = hospitalWithDoctors.hospitalName,
                 hospitalCity = hospitalWithDoctors.hospitalCity,
@@ -114,8 +111,9 @@ fun LazyListScope.hospitalDoctorCards(
                 hospitalPhone = hospitalWithDoctors.hospitalPhone,
                 doctor = doctor,
                 onBookAppointmentClick = {
+                    // Pass both hospital and doctor details to the callback
                     onBookAppointmentClick(hospitalWithDoctors, doctor)
-                },
+                }
             )
         }
     }
