@@ -1,10 +1,10 @@
 package com.example.medease.presentation.features.home.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medease.data.repository.auth.UserDataStoreRepository
 import com.example.medease.data.repository.home.UserHomeRepository
+import com.example.medease.data.util.Validator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -17,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userHomeRepository: UserHomeRepository,
-    private val dataStoreRepository: UserDataStoreRepository
+    private val dataStoreRepository: UserDataStoreRepository,
+    private val validator: Validator
 ) : ViewModel() {
 
     private val _homeState = MutableStateFlow(HomeStates())
@@ -77,15 +78,35 @@ class HomeViewModel @Inject constructor(
                     )
                 }
             }
-            is HomeEvents.fetchHospitalBeds -> {
+
+            is HomeEvents.FetchHospitalBeds -> {
                 fetchHospitalBeds(event.hospitalId)
             }
 
             is HomeEvents.BookingDateChange -> {
-                _homeState.update { it.copy(bookingDate = event.newDate) }
+                val error = validator.validateBookingDate(
+                    bookingDate = event.newDate,
+                    fromDate = event.fromDate,
+                    toDate = event.toDate
+                )
+                _homeState.update {
+                    it.copy(
+                        bookingDateError = error?.message,
+                        bookingDate = event.newDate
+                    )
+                }
             }
+
             is HomeEvents.BookingTimeChange -> {
-                _homeState.update { it.copy(bookingTime = event.newTime) }
+                val error = validator.validateBookingTime(
+                    bookingTime = event.newTime,
+                )
+                _homeState.update {
+                    it.copy(
+                        bookingTimeError = error?.message,
+                        bookingTime = event.newTime
+                    )
+                }
             }
 
             is HomeEvents.BookingQuotaChange -> {

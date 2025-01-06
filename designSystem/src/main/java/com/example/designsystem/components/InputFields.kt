@@ -194,6 +194,92 @@ fun OutlinedDateInputField(
 }
 
 @Composable
+fun OutlinedTimeInputField(
+    label: String,
+    time: String,
+    onTimeChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    error: String? = null,
+    shape: Shape = MaterialTheme.shapes.small,
+    enabled: Boolean = true,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    var openTimePicker by remember { mutableStateOf(false) }
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.secondary
+        )
+        OutlinedTextField(
+            value = time,
+            onValueChange = {},
+            interactionSource = interactionSource,
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = MaterialTheme.typography.bodyLarge,
+            placeholder = placeholder,
+            leadingIcon = leadingIcon,
+            trailingIcon = trailingIcon,
+            isError = error != null,
+            shape = shape,
+            enabled = enabled,
+            readOnly = true,
+            visualTransformation = VisualTransformation.None,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedContainerColor = MaterialTheme.colorScheme.onBackground,
+                focusedTextColor = MaterialTheme.colorScheme.secondary,
+                unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                unfocusedLeadingIconColor = MaterialTheme.colorScheme.outline,
+                focusedLeadingIconColor = MaterialTheme.colorScheme.outline,
+                disabledLeadingIconColor = MaterialTheme.colorScheme.outline,
+                errorLeadingIconColor = MaterialTheme.colorScheme.outline,
+                unfocusedTrailingIconColor = MaterialTheme.colorScheme.outline,
+                focusedTrailingIconColor = MaterialTheme.colorScheme.outline,
+                disabledTrailingIconColor = MaterialTheme.colorScheme.outline,
+                errorTrailingIconColor = MaterialTheme.colorScheme.outline,
+                focusedPlaceholderColor =MaterialTheme.colorScheme.outline,
+                unfocusedPlaceholderColor =MaterialTheme.colorScheme.outline,
+                disabledPlaceholderColor =MaterialTheme.colorScheme.outline,
+                errorPlaceholderColor =MaterialTheme.colorScheme.outline,
+                unfocusedBorderColor = Color.Transparent,
+                disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                errorBorderColor = MaterialTheme.colorScheme.errorContainer,
+            )
+        )
+
+        InputFieldError(error)
+    }
+
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            if (interaction is PressInteraction.Press) {
+                openTimePicker = true
+            }
+        }
+    }
+
+    if (openTimePicker) {
+        SelectTime(
+            onDismiss = {
+                openTimePicker = false
+            },
+            onTimeSelected = { selectedTime ->
+                onTimeChange(selectedTime)
+                openTimePicker = false
+            },
+        )
+    }
+}
+
+@Composable
 private fun InputFieldError(
     error: String?,
 ) {

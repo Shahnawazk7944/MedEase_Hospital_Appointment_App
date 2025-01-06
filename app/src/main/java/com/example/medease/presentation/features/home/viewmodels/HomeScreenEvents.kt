@@ -132,15 +132,15 @@ sealed class HomeEvents {
         val hospitalWithDoctors: HospitalWithDoctors,
         val doctor: Doctor
     ) : HomeEvents()
-    data class fetchHospitalBeds(val hospitalId: String) : HomeEvents()
-    data class OnSelectBedClick(val bed: Bed) : HomeEvents()
+    data class FetchHospitalBeds(val hospitalId: String) : HomeEvents()
+    data class OnSelectBedClick(val bed: Bed?) : HomeEvents()
     data class BookAppointment(
         val hospitalWithDoctors: HospitalWithDoctors,
         val doctor: Doctor,
         val bed: Bed? = null
     ) : HomeEvents()
 
-    data class BookingDateChange(val newDate: String) : HomeEvents()
+    data class BookingDateChange(val newDate: String, val fromDate: String, val toDate: String) : HomeEvents()
     data class BookingTimeChange(val newTime: String) : HomeEvents()
     data class BookingQuotaChange(val newQuota: String) : HomeEvents()
 

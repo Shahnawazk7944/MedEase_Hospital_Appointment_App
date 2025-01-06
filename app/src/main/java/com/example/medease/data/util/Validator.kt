@@ -1,9 +1,11 @@
 package com.example.medease.data.util
 
 import android.util.Patterns
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 data class ValidationError(val message: String)
-class AuthValidator {
+class Validator {
 
     fun validateName(name: String): ValidationError? {
         if (name.isBlank()) {
@@ -104,6 +106,36 @@ class AuthValidator {
         }
         return null
     }
+
+    fun validateBookingDate(bookingDate: String, fromDate: String, toDate: String): ValidationError? {
+        if (bookingDate.isBlank()) {
+            return ValidationError("Booking Date cannot be empty")
+        }
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+        val bookingDateObj = dateFormat.parse(bookingDate)
+
+        val fromDateObj = dateFormat.parse(fromDate)
+        val toDateObj = dateFormat.parse(toDate)
+
+        if (bookingDateObj != null && fromDateObj != null && toDateObj != null) {
+            if (bookingDateObj.before(fromDateObj) || bookingDateObj.after(toDateObj)) {
+                return ValidationError("Booking Date must be between From Date and To Date.")
+            }
+        } else {
+            return ValidationError("Invalid date format. Please use dd-MM-yyyy.")
+        }
+
+        return null
+    }
+
+    fun validateBookingTime(bookingTime: String): ValidationError? {
+        if (bookingTime.isBlank()) {
+            return ValidationError("Booking Time cannot be empty")
+        }
+        return null
+    }
+
+
 
     private fun String.isValidEmail(): Boolean {
         return Patterns.EMAIL_ADDRESS.matcher(this).matches()

@@ -2,15 +2,22 @@ package com.example.designsystem.components
 
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.Text
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.designsystem.R
 import com.example.designsystem.theme.spacing
@@ -28,7 +35,7 @@ fun SelectDate(
     onDateSelected: (String) -> Unit,
 ) {
     val datePickerState = rememberDatePickerState(
-       //selectableDates = PastOrPresentSelectableDates
+        //selectableDates = PastOrPresentSelectableDates
     )
     DatePickerDialog(
         shape = RoundedCornerShape(MaterialTheme.spacing.large),
@@ -46,7 +53,7 @@ fun SelectDate(
             SecondaryButton(
                 label = onDismissText,
                 onClick = { onDismiss.invoke() },
-                colors= ButtonDefaults.outlinedButtonColors( contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         },
         content = {
@@ -63,7 +70,7 @@ fun Long.convertMillisToDate(): String {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-object PastOrPresentSelectableDates: SelectableDates {
+object PastOrPresentSelectableDates : SelectableDates {
     override fun isSelectableDate(utcTimeMillis: Long): Boolean {
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+5:30"))
         calendar.timeInMillis = System.currentTimeMillis()
@@ -74,4 +81,45 @@ object PastOrPresentSelectableDates: SelectableDates {
         val endOfToday = calendar.timeInMillis
         return utcTimeMillis <= endOfToday
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SelectTime(
+    onConfirmText: String = stringResource(R.string.select),
+    onDismissText: String = stringResource(R.string.cancel),
+    onDismiss: () -> Unit,
+    onTimeSelected: (String) -> Unit,
+) {
+    val currentTime = Calendar.getInstance()
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(Calendar.MINUTE),
+        is24Hour = false,
+    )
+    AlertDialog(
+        shape = RoundedCornerShape(MaterialTheme.spacing.large),
+        onDismissRequest = { onDismiss.invoke() },
+        title = { Text("Select Time") },
+        confirmButton = {
+            PrimaryButton(
+                label = onConfirmText,
+                onClick = {
+                    onTimeSelected("${timePickerState.hour}:${timePickerState.minute} ${if(timePickerState.isAfternoon) "PM" else "AM" }")
+                    onDismiss()
+                },
+            )
+        },
+        dismissButton = {
+            SecondaryButton(
+                label = onDismissText,
+                onClick = { onDismiss.invoke() },
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+            )
+        },
+        text = {
+            Box(modifier = Modifier.padding(MaterialTheme.spacing.extraLarge)){ TimePicker(state = timePickerState) }
+        }
+    )
 }
