@@ -361,11 +361,14 @@ fun HomeContent(
             ModalBottomSheet(
                 containerColor = MaterialTheme.colorScheme.background,
                 onDismissRequest = {
-                    event(
-                        HomeEvents.OnSelectBedClick(
-                            null
-                        )
-                    )
+//                    event(
+//                        HomeEvents.OnSelectBedClick(
+//                            null
+//                        )
+//                    )
+//                    event(HomeEvents.BookingDateChange("", "", ""))
+//                    event(HomeEvents.BookingTimeChange(""))
+                    event(HomeEvents.OnBottomSheetDismiss)
                     showBottomSheet = false
                 },
                 sheetState = sheetState

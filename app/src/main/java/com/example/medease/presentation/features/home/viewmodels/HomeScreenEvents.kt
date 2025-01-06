@@ -132,6 +132,7 @@ sealed class HomeEvents {
         val hospitalWithDoctors: HospitalWithDoctors,
         val doctor: Doctor
     ) : HomeEvents()
+
     data class FetchHospitalBeds(val hospitalId: String) : HomeEvents()
     data class OnSelectBedClick(val bed: Bed?) : HomeEvents()
     data class BookAppointment(
@@ -140,8 +141,27 @@ sealed class HomeEvents {
         val bed: Bed? = null
     ) : HomeEvents()
 
-    data class BookingDateChange(val newDate: String, val fromDate: String, val toDate: String) : HomeEvents()
+    data class BookingDateChange(val newDate: String, val fromDate: String, val toDate: String) :
+        HomeEvents()
+
     data class BookingTimeChange(val newTime: String) : HomeEvents()
     data class BookingQuotaChange(val newQuota: String) : HomeEvents()
+    data object OnBottomSheetDismiss : HomeEvents()
 
+}
+
+fun HomeStates.isConfirmBookingFormValid(): Boolean {
+    return bookingDate.isNotBlank() && bookingTime.isNotBlank() &&
+            bookingDateError == null && bookingTimeError == null
+}
+
+fun HomeStates.resetConfirmBookingForm(): HomeStates {
+    return this.copy(
+        bookingDate = "",
+        bookingTime = "",
+        bookingDateError = null,
+        bookingTimeError = null,
+        selectedBed = null
+
+    )
 }
