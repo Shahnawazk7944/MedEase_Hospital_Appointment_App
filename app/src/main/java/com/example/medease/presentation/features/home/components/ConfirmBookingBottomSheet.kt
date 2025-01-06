@@ -45,6 +45,9 @@ import com.example.medease.domain.model.Doctor
 import com.example.medease.domain.model.HospitalWithDoctors
 import com.example.medease.presentation.features.home.viewmodels.HomeEvents
 import com.example.medease.presentation.features.home.viewmodels.HomeStates
+import com.example.medease.presentation.features.home.viewmodels.isConfirmBookingFormValid
+import java.text.NumberFormat
+import java.util.Locale
 
 
 @Composable
@@ -386,13 +389,29 @@ fun BookingConformationBottomSheet(
                 // Confirm Booking Button ----------------------------
                 item(key = "confirm_booking_button") {
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+
+                    // Calculate total price
+                    val doctorFees = when (state.selectedQuota) {
+                        "general" -> doctor.generalFees.toDoubleOrNull() ?: 0.0
+                        "care" -> doctor.careFees.toDoubleOrNull() ?: 0.0
+                        "emergency" -> doctor.emergencyFees.toDoubleOrNull() ?: 0.0
+                        else -> 0.0
+                    }
+                    val bedPrice = state.selectedBed?.perDayBedPriceINR?.toDoubleOrNull() ?: 0.0
+                    val totalPrice = doctorFees + bedPrice
+
+                    // Format total price with rupee symbol
+                    val formattedTotalPrice = NumberFormat.getCurrencyInstance(Locale("en", "IN")).format(totalPrice)
+
+
                     PrimaryButton(
                         onClick = { /* Confirm booking logic */ },
                         shape = RoundedCornerShape(MaterialTheme.spacing.large),
-                        label = "Confirm Booking",
+                        label = "Confirm Booking $formattedTotalPrice",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .align(Alignment.End)
+                            .align(Alignment.End),
+                        enabled = state.isConfirmBookingFormValid()
                     )
                 }
             }

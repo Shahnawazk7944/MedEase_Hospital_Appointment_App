@@ -112,6 +112,10 @@ class HomeViewModel @Inject constructor(
             is HomeEvents.BookingQuotaChange -> {
                 _homeState.update { it.copy(selectedQuota = event.newQuota) }
             }
+
+            HomeEvents.OnBottomSheetDismiss -> {
+                _homeState.update{it.copy().resetConfirmBookingForm()}
+            }
         }
     }
 
