@@ -40,6 +40,7 @@ import com.example.designsystem.components.OutlinedDateInputField
 import com.example.designsystem.components.OutlinedTimeInputField
 import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.spacing
+import com.example.medease.domain.model.AppointmentDetails
 import com.example.medease.domain.model.Bed
 import com.example.medease.domain.model.Doctor
 import com.example.medease.domain.model.HospitalWithDoctors
@@ -56,7 +57,7 @@ fun BookingConformationBottomSheet(
     doctor: Doctor,
     state: HomeStates,
     events: (HomeEvents) -> Unit,
-    closeBottomSheet: () -> Unit
+    onConfirmAppointmentClick: (AppointmentDetails) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -405,7 +406,21 @@ fun BookingConformationBottomSheet(
 
 
                     PrimaryButton(
-                        onClick = { /* Confirm booking logic */ },
+                        onClick = {
+                            onConfirmAppointmentClick.invoke(
+                                AppointmentDetails(
+                                    appointmentId = "",
+                                    hospital = hospitalWithDoctors,
+                                    doctor = doctor,
+                                    bed = state.selectedBed,
+                                    bookingDate = state.bookingDate,
+                                    bookingTime = state.bookingTime,
+                                    bookingQuota = state.selectedQuota,
+                                    totalPrice = formattedTotalPrice,
+                                    status = "Pending confirmation" // or "Pending confirmation" or similar
+                                )
+                            )
+                        },
                         shape = RoundedCornerShape(MaterialTheme.spacing.large),
                         label = "Confirm Booking $formattedTotalPrice",
                         modifier = Modifier
