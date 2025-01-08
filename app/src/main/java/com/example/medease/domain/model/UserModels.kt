@@ -49,3 +49,27 @@ data class Bed(
     val availability: String = "",
     val availableUnits: String = "0"
 )
+
+@Serializable
+data class AppointmentDetails(
+    val appointmentId: String = "",
+    val hospital: HospitalWithDoctors,
+    val doctor: Doctor,
+    val bed: Bed? = null, // Optional
+    val bookingDate: String = "",
+    val bookingTime: String = "",
+    val bookingQuota: String = "",
+    val totalPrice: String = "",
+    val status: String = "Booking Confirmed"
+)
+
+@Serializable
+data class PaymentDetails(
+    val appointmentId: String = "",
+    val transactionId: String = "",
+    val date: String = "",
+    val paymentType: String = "",
+    val amountPaid: String = "",
+    val adminCharges: String = "",
+    val status: String = "Success"
+)

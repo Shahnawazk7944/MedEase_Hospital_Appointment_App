@@ -1,5 +1,6 @@
 package com.example.medease.presentation.features.allFeatures
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,69 +17,55 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
+import com.example.medease.domain.model.AppointmentDetails
 import com.example.medease.domain.model.Bed
 import com.example.medease.domain.model.Doctor
 import com.example.medease.domain.model.HospitalWithDoctors
+import com.example.medease.domain.model.PaymentDetails
 import com.example.medease.presentation.features.common.CustomTopBar
 import java.util.Locale
-
-
-data class AppointmentDetails(
-    val hospital: HospitalWithDoctors,
-    val doctor: Doctor,
-    val bed: Bed? = null, // Optional
-    val bookingDate: String = "",
-    val bookingTime: String = "",
-    val bookingQuota: String = "",
-    val totalPrice: String = "",
-    val status: String = "Booking Confirmed"
-)
-
-
-data class PaymentDetails(
-    val transactionId: String = "",
-    val date: String = "",
-    val paymentType: String = "",
-    val amountPaid: String = "",
-    val adminCharges: String = "",
-    val status: String = "Success"
-)
 
 @Composable
 fun BookingSuccessScreen(
     appointmentDetails: AppointmentDetails,
     paymentDetails: PaymentDetails,
-    onBackClick: () -> Unit
+    navController: NavHostController,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         topBar = {
             CustomTopBar(
-                onBackClick = onBackClick,
+                onBackClick = { navController.navigateUp() },
                 title = {
                     Text(
                         text = "",
@@ -215,6 +202,30 @@ fun BookingSuccessScreen(
                     }
                     Row {
                         Text(
+                            text = "Fees (${
+                                appointmentDetails.bookingQuota.replaceFirstChar {
+                                    if (it.isLowerCase()) it.titlecase(
+                                        Locale.ROOT
+                                    ) else it.toString()
+                                }
+                            }) : ",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = when (appointmentDetails.bookingQuota) {
+                                "general" -> appointmentDetails.doctor.generalFees
+                                "care" -> appointmentDetails.doctor.careFees
+                                "emergency" -> appointmentDetails.doctor.emergencyFees
+                                else -> "No fees found"
+                            },
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    }
+
+                    Row {
+                        Text(
                             text = "Symptoms Treated : ",
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.titleMedium,
@@ -344,6 +355,18 @@ fun BookingSuccessScreen(
                     )
                     Row {
                         Text(
+                            text = "Appointment ID : ",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = paymentDetails.transactionId,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    }
+                    Row {
+                        Text(
                             text = "Transaction ID : ",
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.titleMedium,
@@ -421,7 +444,7 @@ fun BookingSuccessScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
             PrimaryButton(
-                onClick = { onBackClick.invoke()},
+                onClick = { navController.navigateUp() },
                 shape = RoundedCornerShape(MaterialTheme.spacing.large),
                 label = "Back to Home",
                 modifier = Modifier
@@ -431,17 +454,26 @@ fun BookingSuccessScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentScreen(
     appointmentDetails: AppointmentDetails,
-    onPaymentButtonClick: () -> Unit,
-    onBackClick: () -> Unit
+    navController: NavHostController,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    Scaffold(
+    // Define a bottom sheet state with the default value as Expanded
+    val bottomSheetState = rememberStandardBottomSheetState(
+        initialValue = SheetValue.Expanded,
+    )
+    BottomSheetScaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        scaffoldState = rememberBottomSheetScaffoldState(
+            bottomSheetState = bottomSheetState,
+            snackbarHostState = snackbarHostState
+        ),
         topBar = {
             CustomTopBar(
-                onBackClick = onBackClick,
+                onBackClick = { navController.navigateUp() },
                 title = {
                     Text(
                         text = "Payment",
@@ -451,6 +483,10 @@ fun PaymentScreen(
                 },
             )
         },
+        sheetContainerColor = MaterialTheme.colorScheme.onBackground,
+        sheetSwipeEnabled = false,
+        sheetShadowElevation = 20.dp,
+        sheetDragHandle = { },
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
@@ -462,6 +498,89 @@ fun PaymentScreen(
                     actionColor = MaterialTheme.colorScheme.secondary,
                     dismissActionContentColor = MaterialTheme.colorScheme.secondary
                 )
+            }
+        },
+        sheetContent = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(MaterialTheme.spacing.large)
+            ) {
+                Text(
+                    text = "Payment Methods",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = MaterialTheme.spacing.medium),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "UPI", style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    RadioButton(
+                        selected = true,
+                        onClick = { },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+                    thickness = 1.dp
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = MaterialTheme.spacing.medium),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Cash", style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    RadioButton(
+                        selected = false,
+                        onClick = { },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+                    thickness = 1.dp
+                )
+                Text(
+                    text = "Total: ₹${appointmentDetails.totalPrice}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                PrimaryButton(
+                    onClick = { /* Confirm booking logic */ },
+                    shape = RoundedCornerShape(MaterialTheme.spacing.large),
+                    label = "Pay Now",
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
             }
         },
     ) { paddingValues ->
@@ -480,120 +599,31 @@ fun PaymentScreen(
                     .padding(bottom = 8.dp)
             )
             AppointmentDetailsCard(appointmentDetails = appointmentDetails)
-            Spacer(modifier = Modifier.height(16.dp))
-            Surface(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = MaterialTheme.spacing.extraLarge,
-                            topEnd = MaterialTheme.spacing.extraLarge
-                        )
-                    ),
-                color = MaterialTheme.colorScheme.onBackground,
-                shadowElevation = 10.dp, // Add elevation here
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(MaterialTheme.spacing.large)
-                ) {
-                    Text(
-                        text = "Payment Methods",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .padding(horizontal = MaterialTheme.spacing.medium),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            "UPI", style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        RadioButton(
-                            selected = true,
-                            onClick = { },
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = MaterialTheme.colorScheme.primary
-                            )
-                        )
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
-                        thickness = 1.dp
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .padding(horizontal = MaterialTheme.spacing.medium),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            "Cash", style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        RadioButton(
-                            selected = false,
-                            onClick = { },
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = MaterialTheme.colorScheme.primary
-                            )
-                        )
-                    }
-
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
-                        thickness = 1.dp
-                    )
-                    Text(
-                        text = "Total: ₹${appointmentDetails.totalPrice}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    PrimaryButton(
-                        onClick = { /* Confirm booking logic */ },
-                        shape = RoundedCornerShape(MaterialTheme.spacing.large),
-                        label = "Pay Now",
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                    )
-
-                }
-            }
         }
     }
 }
+
 
 @Composable
 fun AppointmentDetailsCard(appointmentDetails: AppointmentDetails) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = MaterialTheme.spacing.medium),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            .padding(horizontal = MaterialTheme.spacing.extraLarge),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.onBackground
-        )
+        ),
+        border = BorderStroke(color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+            width = 1.dp)
     ) {
 
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "Hospital : ",
                     color = MaterialTheme.colorScheme.primary,
@@ -605,7 +635,18 @@ fun AppointmentDetailsCard(appointmentDetails: AppointmentDetails) {
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
-            Row {
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = MaterialTheme.spacing.extraSmall),
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+                thickness = 1.dp
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "Doctor : ",
                     color = MaterialTheme.colorScheme.primary,
@@ -617,7 +658,18 @@ fun AppointmentDetailsCard(appointmentDetails: AppointmentDetails) {
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
-            Row {
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = MaterialTheme.spacing.extraSmall),
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+                thickness = 1.dp
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "Date : ",
                     color = MaterialTheme.colorScheme.primary,
@@ -640,7 +692,18 @@ fun AppointmentDetailsCard(appointmentDetails: AppointmentDetails) {
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
-            Row {
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = MaterialTheme.spacing.extraSmall),
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+                thickness = 1.dp
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "Total : ",
                     color = MaterialTheme.colorScheme.primary,
@@ -669,6 +732,9 @@ fun BookingSuccessScreenPreview() {
         name = "Dr. John Doe",
         specialist = "Cardiologist",
         experience = "10 years",
+        generalFees = "500",
+        careFees = "700",
+        emergencyFees = "300",
         treatedSymptoms = "Heart diseases, etc."
     )
     val bed = Bed(
@@ -683,10 +749,11 @@ fun BookingSuccessScreenPreview() {
         bed = bed,
         bookingDate = "2023-12-31",
         bookingTime = "10:00 AM",
-        bookingQuota = "general",
+        bookingQuota = "care",
         totalPrice = "5000"
     )
     val paymentDetails = PaymentDetails(
+        appointmentId = "TXN1234567890",
         transactionId = "TXN1234567890",
         date = "2023-12-31",
         paymentType = "Credit Card",
@@ -695,7 +762,9 @@ fun BookingSuccessScreenPreview() {
         status = "Success"
     )
     MedEaseTheme {
-        BookingSuccessScreen(appointmentDetails, paymentDetails, {})
+        BookingSuccessScreen(
+            appointmentDetails, paymentDetails, navController = rememberNavController(),
+        )
     }
 }
 
@@ -712,6 +781,9 @@ fun PaymentScreenPreview() {
         name = "Dr. John Doe",
         specialist = "Cardiologist",
         experience = "10 years",
+        generalFees = "500",
+        careFees = "700",
+        emergencyFees = "300",
         treatedSymptoms = "Heart diseases, etc."
     )
     val bed = Bed(
@@ -726,13 +798,13 @@ fun PaymentScreenPreview() {
         bed = bed,
         bookingDate = "2023-12-31",
         bookingTime = "10:00 AM",
-        bookingQuota = "general",
+        bookingQuota = "care",
         totalPrice = "5000"
     )
     MedEaseTheme {
         PaymentScreen(
             appointmentDetails,
-            onPaymentButtonClick = {}
-        ) {}
+            navController = rememberNavController(),
+        )
     }
 }
