@@ -8,6 +8,7 @@ import com.example.medease.domain.model.Bed
 import com.example.medease.domain.model.Doctor
 import com.example.medease.domain.model.HospitalWithDoctors
 import com.example.medease.domain.model.UserProfile
+import kotlin.String
 
 val sampleHospitals = listOf(
     HospitalWithDoctors(
@@ -159,9 +160,9 @@ fun HomeStates.resetConfirmBookingForm(): HomeStates {
     return this.copy(
         bookingDate = "",
         bookingTime = "",
+        selectedQuota= "general",
         bookingDateError = null,
         bookingTimeError = null,
         selectedBed = null
-
     )
 }

@@ -18,6 +18,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.example.designsystem.R
 import com.example.designsystem.theme.spacing
@@ -91,6 +92,7 @@ fun SelectTime(
     onDismiss: () -> Unit,
     onTimeSelected: (String) -> Unit,
 ) {
+    val context = LocalContext.current
     val currentTime = Calendar.getInstance()
 
     val timePickerState = rememberTimePickerState(
@@ -106,7 +108,16 @@ fun SelectTime(
             PrimaryButton(
                 label = onConfirmText,
                 onClick = {
-                    onTimeSelected("${timePickerState.hour}:${timePickerState.minute} ${if(timePickerState.isAfternoon) "PM" else "AM" }")
+                    val calendar = Calendar.getInstance()
+                    calendar.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+                    calendar.set(Calendar.MINUTE, timePickerState.minute)
+
+                    val formatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                    val selectedTime = formatter.format(calendar.time)
+
+                    onTimeSelected(
+                        selectedTime
+                    )
                     onDismiss()
                 },
             )

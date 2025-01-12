@@ -29,10 +29,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
-import kotlinx.serialization.Serializable
 import javax.inject.Inject
-import kotlin.collections.map
-import kotlin.collections.toMutableList
 
 class UserHomeRepositoryImpl @Inject constructor(
     private val firebaseWrapper: FirebaseWrapper,
@@ -96,7 +93,8 @@ class UserHomeRepositoryImpl @Inject constructor(
 
     override suspend fun fetchBedsFromHospital(hospitalId: String): Flow<Either<UserOperationsFailure, List<Bed>>> {
         return callbackFlow {
-            val bedsCollection = firestore.collection(HOSPITALS_COLLECTION).document(hospitalId).collection(BEDS_COLLECTION)
+            val bedsCollection = firestore.collection(HOSPITALS_COLLECTION).document(hospitalId)
+                .collection(BEDS_COLLECTION)
             val listenerRegistration = bedsCollection.addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     trySend(UserOperationsFailure.DatabaseError(error).left())

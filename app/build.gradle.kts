@@ -73,6 +73,8 @@ dependencies {
 
     //Extended Icons
     implementation(libs.androidx.material.icons.extended.android)
+    //qr code
+    implementation(libs.qr.gen)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

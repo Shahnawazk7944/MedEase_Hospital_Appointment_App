@@ -362,6 +362,7 @@ fun HomeContent(
                 BookingConformationBottomSheet(
                     hospitalWithDoctors = state.selectedHospitalWithDoctors!!,
                     doctor = state.selectedDoctor!!,
+                    userId = state.userProfile?.userId!!,
                     state = state,
                     events = event,
                     onConfirmAppointmentClick = { appointmentDetails ->

@@ -60,15 +60,15 @@ fun MedEaseNavGraph(
         }
         composable<Routes.MyAppointmentsScreen> { backStackEntry ->
             val user: Routes.MyAppointmentsScreen = backStackEntry.toRoute()
-            MyAppointmentsScreen(navController = navController)
+            MyAppointmentsScreen(navController = navController, userId = user.userId)
         }
         composable<Routes.HealthRecordsScreen> { backStackEntry ->
             val user: Routes.HealthRecordsScreen = backStackEntry.toRoute()
-            HealthRecordsScreen(navController = navController)
+            HealthRecordsScreen(navController = navController, userId = user.userId)
         }
         composable<Routes.TransactionsScreen> { backStackEntry ->
             val user: Routes.TransactionsScreen = backStackEntry.toRoute()
-            TransactionsScreen(navController = navController)
+            TransactionsScreen(navController = navController, userId = user.userId)
         }
         composable<Routes.ProfileScreen> { backStackEntry ->
             val user: Routes.ProfileScreen = backStackEntry.toRoute()
@@ -87,9 +87,12 @@ fun MedEaseNavGraph(
         }
         composable<Routes.BookingSuccessScreen> { backStackEntry ->
             val user: Routes.BookingSuccessScreen = backStackEntry.toRoute()
-//            BookingSuccessScreen(
-//
-//            )
+            BookingSuccessScreen(
+                appointmentId = user.appointmentId,
+                transactionId = user.transactionId,
+                userId = user.userId,
+                navController = navController
+            )
         }
     }
 }

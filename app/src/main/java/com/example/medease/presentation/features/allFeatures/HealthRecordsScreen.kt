@@ -22,6 +22,7 @@ import com.example.medease.presentation.features.common.CustomTopBar
 @Composable
 fun HealthRecordsScreen(
     viewModel: HealthRecordsViewModel = hiltViewModel(),
+    userId: String,
     navController: NavHostController
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
