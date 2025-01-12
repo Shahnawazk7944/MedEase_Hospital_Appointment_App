@@ -53,8 +53,10 @@ data class Bed(
 @Serializable
 data class AppointmentDetails(
     val appointmentId: String = "",
-    val hospital: HospitalWithDoctors,
-    val doctor: Doctor,
+    val hospitalId: String = "",
+    val userId: String = "",
+    val hospital: HospitalWithDoctors = HospitalWithDoctors(),
+    val doctor: Doctor = Doctor(),
     val bed: Bed? = null, // Optional
     val bookingDate: String = "",
     val bookingTime: String = "",
@@ -67,9 +69,16 @@ data class AppointmentDetails(
 data class PaymentDetails(
     val appointmentId: String = "",
     val transactionId: String = "",
+    val userId: String = "",
     val date: String = "",
     val paymentType: String = "",
     val amountPaid: String = "",
     val adminCharges: String = "",
     val status: String = "Success"
+)
+
+@Serializable
+data class Booking(
+    val appointmentDetails: AppointmentDetails = AppointmentDetails(),
+    val paymentDetails: PaymentDetails = PaymentDetails()
 )

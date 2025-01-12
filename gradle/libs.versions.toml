@@ -32,6 +32,8 @@ kotlinxCoroutinesCore = "1.8.1"
 kotlinxSerialization = "1.7.1"
 
 arrowKt = "1.2.4"
+qrGen = "3.5.1"
+qrScan = "4.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -72,6 +74,8 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrowKt" }
+qr-gen = { module = "com.google.zxing:core", version.ref = "qrGen" }
+qr-scan = { module = "com.journeyapps:zxing-android-embedded", version.ref = "qrScan" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

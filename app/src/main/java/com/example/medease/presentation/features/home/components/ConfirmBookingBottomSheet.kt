@@ -54,6 +54,7 @@ import java.util.Locale
 @Composable
 fun BookingConformationBottomSheet(
     hospitalWithDoctors: HospitalWithDoctors,
+    userId: String,
     doctor: Doctor,
     state: HomeStates,
     events: (HomeEvents) -> Unit,
@@ -410,7 +411,9 @@ fun BookingConformationBottomSheet(
                             onConfirmAppointmentClick.invoke(
                                 AppointmentDetails(
                                     appointmentId = "",
-                                    hospital = hospitalWithDoctors,
+                                    hospital = hospitalWithDoctors.copy(doctors = emptyList()),
+                                    userId = userId,
+                                    hospitalId = hospitalWithDoctors.hospitalId,
                                     doctor = doctor,
                                     bed = state.selectedBed,
                                     bookingDate = state.bookingDate,

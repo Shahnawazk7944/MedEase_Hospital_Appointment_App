@@ -5,6 +5,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import com.example.medease.data.firebase.FirebaseWrapper
+import com.example.medease.data.repository.allFeatures.UserAllFeaturesRepository
+import com.example.medease.data.repository.allFeatures.UserAllFeaturesRepositoryImpl
 import com.example.medease.data.repository.auth.UserAuthRepository
 import com.example.medease.data.repository.auth.UserAuthRepositoryImpl
 import com.example.medease.data.repository.auth.UserDataStoreRepository
@@ -52,6 +54,14 @@ object AppModule {
         dataStore: DataStore<Preferences>
     ): UserHomeRepository {
         return UserHomeRepositoryImpl(firebaseWrapper, dataStore)
+    }
+
+    @Singleton
+    @Provides
+    fun provideUserAllFeaturesRepository(
+        firebaseWrapper: FirebaseWrapper,
+    ): UserAllFeaturesRepository {
+        return UserAllFeaturesRepositoryImpl(firebaseWrapper)
     }
 
     @Singleton

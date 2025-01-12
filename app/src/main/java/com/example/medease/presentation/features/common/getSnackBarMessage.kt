@@ -1,5 +1,6 @@
 package com.example.medease.presentation.features.common
 
+import com.example.medease.data.repository.allFeatures.UserAllFeaturesFailure
 import com.example.medease.data.repository.auth.SignInWithEmailAndPasswordFailure
 import com.example.medease.data.repository.auth.SignupWithEmailAndPasswordFailure
 import com.example.medease.data.repository.home.LogoutFailure
@@ -31,6 +32,15 @@ fun getSnackbarMessage(failure: Any?): String {
         is UserOperationsFailure.UnknownError -> "An unknown error occurred"
         is UserOperationsFailure.InvalidData -> "Invalid data"
         is UserOperationsFailure.DataNotFound -> "Data not found"
+
+        is UserAllFeaturesFailure.NetworkError -> "No internet connection"
+        is UserAllFeaturesFailure.DatabaseError -> "Database error"
+        is UserAllFeaturesFailure.UnknownError -> "An unknown error occurred"
+        is UserAllFeaturesFailure.InvalidData -> "Invalid data"
+        is UserAllFeaturesFailure.DataNotFound -> "Data not found"
+        is UserAllFeaturesFailure.BookingNotFound -> "Booking not found"
+        is UserAllFeaturesFailure.PaymentFailed -> "Payment failed, try again later"
+        // Handle other failure types as needed
         else -> "An unexpected error occurred"
     }
 }
