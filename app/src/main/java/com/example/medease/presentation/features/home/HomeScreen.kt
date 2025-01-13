@@ -153,9 +153,6 @@ fun HomeScreen(
                 activity.finishAndRemoveTask()
             }
         },
-        onLogoutClick = {
-            viewModel.homeEvents(HomeEvents.OnLogoutClick)
-        },
         onUserHomeOptionClick = {
             when (it) {
                 0 -> navController.navigate(
@@ -178,7 +175,10 @@ fun HomeScreen(
 
                 3 -> navController.navigate(
                     Routes.ProfileScreen(
-                        userId = state.userProfile?.userId ?: "No ID Found"
+                        userId = state.userProfile?.userId ?: "No ID Found",
+                        name = state.userProfile?.name ?: "Unknown",
+                        email = state.userProfile?.email ?: "Unknown",
+                        phone = state.userProfile?.phone ?: "Unknown",
                     )
                 )
             }
@@ -199,7 +199,6 @@ fun HomeContent(
     snackbarHostState: SnackbarHostState,
     event: (HomeEvents) -> Unit,
     onBackClick: () -> Unit,
-    onLogoutClick: () -> Unit,
     onUserHomeOptionClick: (Int) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onConfirmAppointmentClick: (AppointmentDetails) -> Unit
@@ -215,16 +214,6 @@ fun HomeContent(
                         textAlign = TextAlign.Center,
                     )
                 },
-                actions = {
-                    IconButton(onClick = onLogoutClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "logout icon",
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(25.dp)
-                        )
-                    }
-                }
             )
         },
         snackbarHost = {
@@ -592,7 +581,6 @@ fun HomeContentPreview() {
             snackbarHostState = snackbarHostState,
             event = {},
             onBackClick = {},
-            onLogoutClick = {},
             onUserHomeOptionClick = {},
             onSearchQueryChange = {},
             onConfirmAppointmentClick = {}

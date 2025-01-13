@@ -72,15 +72,20 @@ fun MedEaseClientNavGraph(
             val profile: ClientRoutes.ProfileScreen = backStackEntry.toRoute()
             HospitalProfileScreen(
                 onLogoutClick = {
+                    navController.navigate(ClientRoutes.SignInScreen) {
+                        popUpTo(ClientRoutes.SignInScreen) {
+                            inclusive = true
+                        }
+                    }
                 },
                 hospitalProfile = ClientProfile(
+                    hospitalId = profile.hospitalId,
                     hospitalName = profile.hospitalName,
                     hospitalEmail = profile.hospitalEmail,
                     hospitalPhone = profile.hospitalPhone,
                     hospitalCity = profile.hospitalCity,
                     hospitalPinCode = profile.hospitalPinCode
                 ),
-                onEditProfileClick = {},
                 onBackClick = { navController.navigateUp() },
             )
         }

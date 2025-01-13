@@ -3,6 +3,7 @@ package com.example.medease.presentation.navGraph
 import Routes
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -11,14 +12,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.medease.domain.model.AppointmentDetails
-import com.example.medease.domain.model.Bed
-import com.example.medease.domain.model.Doctor
+import com.example.medease.domain.model.UserProfile
 import com.example.medease.presentation.features.allFeatures.BookingSuccessScreen
 import com.example.medease.presentation.features.allFeatures.HealthRecordsScreen
 import com.example.medease.presentation.features.allFeatures.MyAppointmentsScreen
 import com.example.medease.presentation.features.allFeatures.PaymentScreen
-import com.example.medease.presentation.features.allFeatures.ProfileScreen
 import com.example.medease.presentation.features.allFeatures.TransactionsScreen
+import com.example.medease.presentation.features.allFeatures.UserProfileScreen
 import com.example.medease.presentation.features.auth.SignInScreen
 import com.example.medease.presentation.features.auth.SignUpScreen
 import com.example.medease.presentation.features.home.HomeScreen
@@ -72,14 +72,33 @@ fun MedEaseNavGraph(
         }
         composable<Routes.ProfileScreen> { backStackEntry ->
             val user: Routes.ProfileScreen = backStackEntry.toRoute()
-            ProfileScreen(navController = navController)
+            UserProfileScreen(
+                userProfile = UserProfile(
+                    userId = user.userId,
+                    name = user.name,
+                    email = user.email,
+                    phone = user.phone
+                ),
+                onLogoutClick = {
+                    Log.d("----", "logout clicked")
+                    navController.navigate(Routes.SignInScreen) {
+                        popUpTo(Routes.SignInScreen) {
+                            inclusive = true
+                        }
+                    }
+                    Log.d("----", " logout clicked passed ")
+
+                },
+                onBackClick = { navController.navigateUp() }
+            )
         }
+
         composable<Routes.PaymentScreen>(
             typeMap = mapOf(
                 typeOf<AppointmentDetails>() to CustomNavigationTypes.AppointmentDetailsType
             )
         ) { backStackEntry ->
-            val user : Routes.PaymentScreen = backStackEntry.toRoute()
+            val user: Routes.PaymentScreen = backStackEntry.toRoute()
             PaymentScreen(
                 appointmentDetails = user.appointmentDetails,
                 navController = navController
@@ -96,6 +115,7 @@ fun MedEaseNavGraph(
         }
     }
 }
+
 private object CustomNavigationTypes {
     val AppointmentDetailsType = object : NavType<AppointmentDetails>(isNullableAllowed = true) {
         override fun get(bundle: Bundle, key: String): AppointmentDetails? {

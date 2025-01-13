@@ -7,7 +7,7 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
-composeBom = "2024.11.00"
+composeBom = "2024.12.01"
 appcompat = "1.7.0"
 material = "1.12.0"
 
@@ -18,22 +18,21 @@ kspAnnotationProcessor = "2.0.20-1.0.25"
 
 dataStore = "1.1.1"
 
-navigationCompose = "2.8.4"
+navigationCompose = "2.8.5"
 lifecycleRuntimeCompose = "2.8.7"
 
 coilCompose = "2.7.0"
 
-materialIconsExtendedAndroid = "1.7.5"
+materialIconsExtendedAndroid = "1.7.6"
 
 googleGmsGoogleServices = "4.4.2"
-firebaseBom = "33.6.0"
+firebaseBom = "33.7.0"
 
-kotlinxCoroutinesCore = "1.8.1"
+kotlinxCoroutinesCore = "1.9.0"
 kotlinxSerialization = "1.7.1"
 
 arrowKt = "1.2.4"
 qrGen = "3.5.1"
-qrScan = "4.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -74,8 +73,8 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrowKt" }
+
 qr-gen = { module = "com.google.zxing:core", version.ref = "qrGen" }
-qr-scan = { module = "com.journeyapps:zxing-android-embedded", version.ref = "qrScan" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
