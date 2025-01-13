@@ -124,9 +124,6 @@ fun HomeScreen(
                 activity.finishAndRemoveTask()
             }
         },
-        onLogoutClick = {
-            viewModel.homeEvents(HomeEvents.OnLogoutClick)
-        },
         onMedicalOptionClick = {
             when (it) {
                 0 -> navController.navigate(ClientRoutes.DoctorScreen(hospitalId = state.clientProfile?.hospitalId
@@ -136,6 +133,7 @@ fun HomeScreen(
                     ?:"No ID Found"))
                 3 -> navController.navigate(
                     ClientRoutes.ProfileScreen(
+                        hospitalId = state.clientProfile?.hospitalId ?: "No ID Found",
                         hospitalName = state.clientProfile?.hospitalName ?: "Unknown",
                         hospitalEmail = state.clientProfile?.hospitalEmail ?: "Unknown",
                         hospitalPhone = state.clientProfile?.hospitalPhone ?: "Unknown",
@@ -155,7 +153,6 @@ fun HomeContent(
     snackbarHostState: SnackbarHostState,
     event: (HomeEvents) -> Unit,
     onBackClick: () -> Unit,
-    onLogoutClick: () -> Unit,
     onMedicalOptionClick: (Int) -> Unit
 ) {
     Scaffold(
@@ -169,16 +166,6 @@ fun HomeContent(
                         textAlign = TextAlign.Center,
                     )
                 },
-                actions = {
-                    IconButton(onClick = { onLogoutClick.invoke() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "logout icon",
-                            tint = MaterialTheme.colorScheme.errorContainer,
-                            modifier = Modifier.size(25.dp)
-                        )
-                    }
-                }
             )
         },
         snackbarHost = {
@@ -322,14 +309,12 @@ fun HomeContentPreview() {
     val snackbarHostState = SnackbarHostState()
     val event: (HomeEvents) -> Unit = {}
     val onBackClick: () -> Unit = {}
-    val onLogoutClick: () -> Unit = {}
     MedEaseTheme {
         HomeContent(
             state = state,
             snackbarHostState = snackbarHostState,
             event = event,
             onBackClick = onBackClick,
-            onLogoutClick = onLogoutClick,
             onMedicalOptionClick = { }
         )
     }

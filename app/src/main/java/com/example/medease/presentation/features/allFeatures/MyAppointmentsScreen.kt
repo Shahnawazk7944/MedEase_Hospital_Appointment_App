@@ -1,6 +1,5 @@
 package com.example.medease.presentation.features.allFeatures
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
+import com.example.medease.R
 import com.example.medease.domain.model.AppointmentDetails
 import com.example.medease.domain.model.Bed
 import com.example.medease.domain.model.Doctor
@@ -56,7 +57,6 @@ import com.example.medease.presentation.features.allFeatures.viewModels.MyAppoin
 import com.example.medease.presentation.features.allFeatures.viewModels.MyAppointmentsViewModel
 import com.example.medease.presentation.features.common.CustomTopBar
 import com.example.medease.presentation.features.common.LoadingDialog
-import com.example.medease.presentation.features.common.QrCodeImage
 import com.example.medease.presentation.features.common.getSnackbarMessage
 import com.example.medease.presentation.features.common.rememberQrBitmap
 
@@ -90,7 +90,7 @@ fun MyAppointmentsScreen(
 
     MyAppointmentsContent(
         state = state,
-        onBackClick = {navController.navigateUp()},
+        onBackClick = { navController.navigateUp() },
         snackbarHostState = snackbarHostState
     )
 }
@@ -152,7 +152,7 @@ fun MyAppointmentsContent(
                 items(state.appointments, key = { it.appointmentId }) { appointment ->
                     AppointmentCard(
                         appointment = appointment
-                    ){
+                    ) {
                         // Navigating or opening another screen on click
                         // Use the appointment id or any desired information
                     }
@@ -163,7 +163,8 @@ fun MyAppointmentsContent(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues),
-                        contentAlignment = Alignment.Center) {
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
                             text = "No Appointments Found",
                             style = MaterialTheme.typography.titleLarge,
@@ -264,16 +265,26 @@ fun AppointmentCard(
                     )
                 }
                 // QR Code
-                val qrCodeContent = "${appointment.appointmentId}-${appointment.bookingDate}-${appointment.bookingTime}"
-                val qrCodeBitmap = rememberQrBitmap(content = qrCodeContent, size = 150.dp)
-
-                qrCodeBitmap?.let { bitmap ->
+                if (appointment.status == "Pending confirmation") {
                     Image(
-                        painter = remember(bitmap) { BitmapPainter(bitmap.asImageBitmap()) },
-                        contentDescription = "QR Code",
+                        painter = painterResource(id = R.drawable.blur_qr),
+                        contentDescription = "Blur QR Code",
                         modifier = Modifier
                             .size(100.dp)
                     )
+                } else {
+                    val qrCodeContent =
+                        "${appointment.appointmentId}-${appointment.bookingDate}-${appointment.bookingTime}"
+                    val qrCodeBitmap = rememberQrBitmap(content = qrCodeContent, size = 150.dp)
+
+                    qrCodeBitmap?.let { bitmap ->
+                        Image(
+                            painter = remember(bitmap) { BitmapPainter(bitmap.asImageBitmap()) },
+                            contentDescription = "QR Code",
+                            modifier = Modifier
+                                .size(100.dp)
+                        )
+                    }
                 }
             }
 

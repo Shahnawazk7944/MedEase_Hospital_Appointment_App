@@ -122,7 +122,6 @@ class HomeViewModel @Inject constructor(
     private suspend fun logout() {
         _homeState.update { it.copy(loggingOut = true) }
         userHomeRepository.logout().onRight { isSuccess ->
-            delay(7000)
             _homeState.update {
                 it.copy(
                     authenticated = isSuccess.authenticated,

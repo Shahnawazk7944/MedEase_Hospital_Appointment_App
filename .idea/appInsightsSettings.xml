@@ -8,8 +8,8 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.example.medease" />
-                  <option name="mobileSdkAppId" value="1:66984618738:android:dcb395cfbff367a62bbe6b" />
+                  <option name="appId" value="com.example.medeaseclient" />
+                  <option name="mobileSdkAppId" value="1:66984618738:android:e0d7262f651ddae52bbe6b" />
                   <option name="projectId" value="medease-b97d4" />
                   <option name="projectNumber" value="66984618738" />
                 </ConnectionSetting>

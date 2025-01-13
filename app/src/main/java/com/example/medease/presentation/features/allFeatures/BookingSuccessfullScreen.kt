@@ -1,5 +1,6 @@
 package com.example.medease.presentation.features.allFeatures
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -39,6 +41,7 @@ import androidx.navigation.NavHostController
 import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
+import com.example.medease.R
 import com.example.medease.domain.model.AppointmentDetails
 import com.example.medease.domain.model.Bed
 import com.example.medease.domain.model.Booking
@@ -173,12 +176,24 @@ fun BookingSuccessScreenContent(
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                            if (state.booking.appointmentDetails.appointmentId.isNotBlank()) {
-                                QrCodeImage(
-                                    content = "${state.booking.appointmentDetails.appointmentId}-${state.booking.appointmentDetails.bookingDate}-${state.booking.appointmentDetails.bookingTime}",
-                                    size = 150.dp
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            if (state.booking.appointmentDetails.status == "Pending confirmation") {
+                                Image(
+                                    painter = painterResource(id = R.drawable.blur_qr),
+                                    contentDescription = "Blur QR Code",
+                                    modifier = Modifier
+                                        .size(150.dp)
                                 )
+                            } else {
+                                if (state.booking.appointmentDetails.appointmentId.isNotBlank()) {
+                                    QrCodeImage(
+                                        content = "${state.booking.appointmentDetails.appointmentId}-${state.booking.appointmentDetails.bookingDate}-${state.booking.appointmentDetails.bookingTime}",
+                                        size = 150.dp
+                                    )
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))

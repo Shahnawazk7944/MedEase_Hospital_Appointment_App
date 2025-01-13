@@ -17,6 +17,7 @@ sealed class ClientRoutes {
 
     @Serializable
     data class ProfileScreen(
+        val hospitalId: String,
         val hospitalName: String,
         val hospitalEmail: String,
         val hospitalPhone: String,
