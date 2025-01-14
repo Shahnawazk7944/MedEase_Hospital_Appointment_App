@@ -47,15 +47,15 @@ fun SignInScreen(
     onSignUpClick: () -> Unit,
     onSuccessFullLogin: () -> Unit
 ) {
-    val state by viewModel.signInState.collectAsStateWithLifecycle()
     val activity = (LocalContext.current as? Activity)
-    val snackbarHostState = remember { SnackbarHostState() }
-
     BackHandler {
         if (activity?.isTaskRoot == true) {
             activity.finishAndRemoveTask()
         }
     }
+
+    val state by viewModel.signInState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = state.isSignInSuccess) {
         if (state.isSignInSuccess) {
             viewModel.signInEvent(SignInEvent.ClearAllFields(true))

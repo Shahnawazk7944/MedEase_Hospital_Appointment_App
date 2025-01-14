@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -82,12 +83,11 @@ fun MedEaseNavGraph(
                 onLogoutClick = {
                     Log.d("----", "logout clicked")
                     navController.navigate(Routes.SignInScreen) {
-                        popUpTo(Routes.SignInScreen) {
+                        popUpTo(navController.graph.id) {
                             inclusive = true
                         }
                     }
                     Log.d("----", " logout clicked passed ")
-
                 },
                 onBackClick = { navController.navigateUp() }
             )

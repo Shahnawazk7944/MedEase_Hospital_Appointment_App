@@ -19,6 +19,7 @@ import com.example.medease.domain.model.HospitalWithDoctors
 import com.example.medease.domain.model.UserProfile
 import com.google.firebase.FirebaseException
 import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -133,13 +134,16 @@ class UserHomeRepositoryImpl @Inject constructor(
     private inline fun <reified T> CollectionReference.addSnapshotListenerFlow(): Flow<Either<UserOperationsFailure, QuerySnapshot>> =
         callbackFlow {
             val snapshotListener = addSnapshotListener { value, error ->
+                if (auth.currentUser == null) {
+                    // User is logged out, do nothing
+                    return@addSnapshotListener
+                }
                 if (error != null) {
                     trySend(Either.Left(UserOperationsFailure.DatabaseError(error)))
-                    close(error)
                     return@addSnapshotListener
                 }
                 value?.let { trySend(Either.Right(it)) }
-                    ?: close(FirebaseException("Snapshot is null"))
+                    ?: trySend(Either.Left(UserOperationsFailure.UnknownError(FirebaseException("Snapshot is null"))))
             }
             awaitClose { snapshotListener.remove() }
         }
