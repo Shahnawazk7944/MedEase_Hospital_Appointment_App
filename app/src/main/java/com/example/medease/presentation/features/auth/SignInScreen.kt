@@ -1,6 +1,7 @@
 package com.example.medease.presentation.features.auth
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -55,12 +56,18 @@ fun SignInScreen(
     }
     val state by viewModel.signInState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    Log.d("----", "state: ${state.isSignInSuccess}")
+
     LaunchedEffect(key1 = state.isSignInSuccess) {
         if (state.isSignInSuccess) {
             viewModel.signInEvent(SignInEvent.ClearAllFields(true))
             onSuccessFullLogin.invoke()
         }
     }
+
+    Log.d("----", "state: ${state.failure}")
+
     LaunchedEffect(key1 = state.failure) {
         if (state.failure != null) {
             val errorMessage =

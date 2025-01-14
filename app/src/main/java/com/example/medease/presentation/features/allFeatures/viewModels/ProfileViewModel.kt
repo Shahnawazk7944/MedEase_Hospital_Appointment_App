@@ -19,7 +19,6 @@ data class ProfileStates(
     val logoutFailure: LogoutFailure? = null,
     val authenticated: Boolean = true,
 )
-
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userHomeRepository: UserHomeRepository,
@@ -37,8 +36,8 @@ class ProfileViewModel @Inject constructor(
                 Log.d("---- ProfileViewModel", "logout: $isSuccess")
                 _profileState.update {
                     it.copy(
-                        authenticated = isSuccess.authenticated,
-                        loggingOut = false
+                        loggingOut = false,
+                        authenticated = isSuccess.authenticated
                     )
                 }
             }.onLeft { failure ->

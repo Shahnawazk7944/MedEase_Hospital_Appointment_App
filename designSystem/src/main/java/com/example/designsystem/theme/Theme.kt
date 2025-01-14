@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val LightScheme = lightColorScheme(
@@ -86,13 +87,20 @@ fun MedEaseTheme(
         else -> LightScheme
     }
 
+
+    val myCustomRippleTheme = CustomRippleTheme(rippleColor = MaterialTheme.colorScheme.background)
+
+
     MaterialTheme(
         colorScheme = colorScheme,
         typography = medEaseTypography()
     ) {
         CompositionLocalProvider(
             LocalSpacing provides Spacing.Companion.Default,
-            content = content,
-        )
+        ) {
+            CustomRippleProvider(rippleTheme = myCustomRippleTheme) {
+                content()
+            }
+        }
     }
 }
