@@ -13,14 +13,14 @@ import androidx.navigation.toRoute
 import com.example.medeaseclient.domain.model.Bed
 import com.example.medeaseclient.domain.model.ClientProfile
 import com.example.medeaseclient.domain.model.Doctor
+import com.example.medeaseclient.presentation.features.allFeatures.HospitalProfileScreen
+import com.example.medeaseclient.presentation.features.allFeatures.MyAppointmentsScreen
 import com.example.medeaseclient.presentation.features.auth.SignInScreen
 import com.example.medeaseclient.presentation.features.auth.SignUpScreen
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.AddDoctorsScreen
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.BedsScreen
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.DoctorsScreen
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.UpdateBedsScreen
-import com.example.medeaseclient.presentation.features.helper.CommingSoonScreen
-import com.example.medeaseclient.presentation.features.helper.HospitalProfileScreen
 import com.example.medeaseclient.presentation.features.home.HomeScreen
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -67,8 +67,7 @@ fun MedEaseClientNavGraph(
                 },
             )
         }
-        composable<ClientRoutes.ProfileScreen> {
-            backStackEntry ->
+        composable<ClientRoutes.ProfileScreen> { backStackEntry ->
             val profile: ClientRoutes.ProfileScreen = backStackEntry.toRoute()
             HospitalProfileScreen(
                 onLogoutClick = {
@@ -89,13 +88,15 @@ fun MedEaseClientNavGraph(
                 onBackClick = { navController.navigateUp() },
             )
         }
-        composable<ClientRoutes.AppointmentScreen> {
-            CommingSoonScreen(
-                onBackClick = { navController.navigateUp() }
+        composable<ClientRoutes.AppointmentScreen> { backStackEntry ->
+            val hospital: ClientRoutes.AppointmentScreen = backStackEntry.toRoute()
+            MyAppointmentsScreen(
+                hospitalId = hospital.hospitalId,
+                navController = navController
             )
         }
         composable<ClientRoutes.DoctorScreen> { backStackEntry ->
-            val hospital : ClientRoutes.DoctorScreen = backStackEntry.toRoute()
+            val hospital: ClientRoutes.DoctorScreen = backStackEntry.toRoute()
             DoctorsScreen(navController = navController, hospitalId = hospital.hospitalId)
         }
         composable<ClientRoutes.AddDoctorScreen>(
@@ -103,11 +104,15 @@ fun MedEaseClientNavGraph(
                 typeOf<Doctor>() to CustomNavigationTypes.DoctorType
             )
         ) { backStackEntry ->
-            val hospital : ClientRoutes.AddDoctorScreen = backStackEntry.toRoute()
-            AddDoctorsScreen(navController = navController, doctor = hospital.doctor, hospitalId = hospital.hospitalId)
+            val hospital: ClientRoutes.AddDoctorScreen = backStackEntry.toRoute()
+            AddDoctorsScreen(
+                navController = navController,
+                doctor = hospital.doctor,
+                hospitalId = hospital.hospitalId
+            )
         }
         composable<ClientRoutes.BedScreen> { backStackEntry ->
-            val hospital : ClientRoutes.BedScreen = backStackEntry.toRoute()
+            val hospital: ClientRoutes.BedScreen = backStackEntry.toRoute()
             BedsScreen(
                 hospitalId = hospital.hospitalId,
                 navController = navController
@@ -118,7 +123,7 @@ fun MedEaseClientNavGraph(
                 typeOf<Bed>() to CustomNavigationTypes.BedType
             )
         ) { backStackEntry ->
-            val hospital : ClientRoutes.UpdateBedScreen = backStackEntry.toRoute()
+            val hospital: ClientRoutes.UpdateBedScreen = backStackEntry.toRoute()
             UpdateBedsScreen(
                 hospitalId = hospital.hospitalId,
                 bed = hospital.bed,

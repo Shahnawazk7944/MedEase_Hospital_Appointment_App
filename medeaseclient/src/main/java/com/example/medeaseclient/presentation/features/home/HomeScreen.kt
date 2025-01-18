@@ -262,7 +262,8 @@ fun HomeContent(
                 items(state.todayAppointments, key = { it.appointmentId }) { appointment ->
                     AppointmentCard(
                         appointment = appointment,
-                        onItemClick = {}
+                        onConfirmClick = {},
+                        onCancelClick = {}
                     )
                 }
             }
