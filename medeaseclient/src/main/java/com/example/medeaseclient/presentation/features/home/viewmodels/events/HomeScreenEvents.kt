@@ -8,4 +8,5 @@ sealed class HomeEvents {
     data class RemoveFailure(val failure: LogoutFailure?) : HomeEvents()
     data object GetClientId : HomeEvents()
     data class GetClientProfile(val clientId: String) : HomeEvents()
+    data class FetchAppointments(val hospitalId: String) : HomeEvents()
 }

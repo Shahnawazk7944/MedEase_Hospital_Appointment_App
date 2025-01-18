@@ -95,7 +95,11 @@ fun SecondaryButton(
         shape = shape,
         contentPadding = contentPadding
     ) {
-        Text(label)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
