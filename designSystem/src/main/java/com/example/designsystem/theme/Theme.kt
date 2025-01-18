@@ -87,14 +87,11 @@ fun MedEaseTheme(
         else -> LightScheme
     }
 
-
-    val myCustomRippleTheme = CustomRippleTheme(rippleColor = MaterialTheme.colorScheme.background)
-
-
     MaterialTheme(
         colorScheme = colorScheme,
         typography = medEaseTypography()
     ) {
+        val myCustomRippleTheme = CustomRippleTheme(rippleColor = MaterialTheme.colorScheme.primary)
         CompositionLocalProvider(
             LocalSpacing provides Spacing.Companion.Default,
         ) {

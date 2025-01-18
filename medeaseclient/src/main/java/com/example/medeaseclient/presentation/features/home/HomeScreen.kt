@@ -18,10 +18,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Bed
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.MedicalInformation
@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -60,6 +59,8 @@ import com.example.medeaseclient.presentation.features.common.CustomTopBar
 import com.example.medeaseclient.presentation.features.common.HomeHeadings
 import com.example.medeaseclient.presentation.features.common.LoadingDialog
 import com.example.medeaseclient.presentation.features.common.getSnackbarToastMessage
+import com.example.medeaseclient.presentation.features.home.components.AppointmentCard
+import com.example.medeaseclient.presentation.features.home.components.MedicalOptionItem
 import com.example.medeaseclient.presentation.features.home.viewmodels.HomeViewModel
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeEvents
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeStates
@@ -126,11 +127,21 @@ fun HomeScreen(
         },
         onMedicalOptionClick = {
             when (it) {
-                0 -> navController.navigate(ClientRoutes.DoctorScreen(hospitalId = state.clientProfile?.hospitalId
-                    ?:"No ID Found"))
-                1 -> navController.navigate(ClientRoutes.AppointmentScreen)
-                2 -> navController.navigate(ClientRoutes.BedScreen(hospitalId = state.clientProfile?.hospitalId
-                    ?:"No ID Found"))
+                0 -> navController.navigate(
+                    ClientRoutes.DoctorScreen(
+                        hospitalId = state.clientProfile?.hospitalId
+                            ?: "No ID Found"
+                    )
+                )
+
+                1 -> navController.navigate(ClientRoutes.AppointmentScreen(hospitalId = state.clientProfile?.hospitalId ?: "No ID Found",))
+                2 -> navController.navigate(
+                    ClientRoutes.BedScreen(
+                        hospitalId = state.clientProfile?.hospitalId
+                            ?: "No ID Found"
+                    )
+                )
+
                 3 -> navController.navigate(
                     ClientRoutes.ProfileScreen(
                         hospitalId = state.clientProfile?.hospitalId ?: "No ID Found",
@@ -182,7 +193,7 @@ fun HomeContent(
             }
         },
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -196,61 +207,62 @@ fun HomeContent(
                 "Profile" to Icons.Default.MedicalInformation
             )
             if (state.loggingOut || state.loading) {
-                LoadingDialog(true)
+                item(key = "loading") { LoadingDialog(true) }
             }
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
-            HomeHeadings(
-                heading = "Welcome to ${state.clientProfile?.hospitalName} Hospital",
-                subHeading = "Leading the way in healthcare"
-            )
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
-                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
-                contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.small)
-            ) {
-                items(options) { option ->
-                    Card(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(MaterialTheme.spacing.large)),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondary,
-                        ),
-                        elevation = CardDefaults.cardElevation(
-                            defaultElevation = 10.dp
-                        )
-                    ) {
-                        MedicalOptionItem(
-                            label = option.first,
-                            icon = option.second,
-                            onClick = { onMedicalOptionClick.invoke(options.indexOf(option)) }
-                        )
+            item(key = "heading_1") {
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
+                HomeHeadings(
+                    heading = "Welcome to ${state.clientProfile?.hospitalName} Hospital",
+                    subHeading = "Leading the way in healthcare"
+                )
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
+            }
+
+            item(key = "medical_options") {
+                LazyVerticalGrid(
+                    modifier = Modifier
+                        .height(260.dp),
+                    columns = GridCells.Fixed(2),
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                    contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.small)
+                ) {
+                    items(options) { option ->
+                        Card(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(MaterialTheme.spacing.large)),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondary,
+                            ),
+                            elevation = CardDefaults.cardElevation(
+                                defaultElevation = 10.dp
+                            )
+                        ) {
+                            MedicalOptionItem(
+                                label = option.first,
+                                icon = option.second,
+                                onClick = { onMedicalOptionClick.invoke(options.indexOf(option)) }
+                            )
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
+            item(key = "heading_2") {
+                Text(
+                    "Today's Appointments",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                    textAlign = TextAlign.Start,
+                )
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
+            }
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = MaterialTheme.spacing.medium)
-            ) {
-                item {
-                    Text(
-                        "Today's Appointments",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.secondary,
-                        textAlign = TextAlign.Start,
-                    )
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
-                }
-                items(10) {
-                    Text(
-                        "Today's Appointments",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.secondary,
-                        textAlign = TextAlign.Start,
+            if (state.todayAppointments.isNotEmpty()) {
+                items(state.todayAppointments, key = { it.appointmentId }) { appointment ->
+                    AppointmentCard(
+                        appointment = appointment,
+                        onItemClick = {}
                     )
                 }
             }
@@ -266,7 +278,9 @@ fun MedicalOptionItem(
     onClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(MaterialTheme.spacing.medium),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(MaterialTheme.spacing.medium),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {

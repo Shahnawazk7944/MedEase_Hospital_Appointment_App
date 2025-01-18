@@ -2,6 +2,7 @@ package com.example.medease.presentation.features.allFeatures
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -180,7 +182,7 @@ fun UserProfileScreenContent(
             ) {
                 Column {
                     ProfileDetailRow("User Id", userProfile.userId?.uppercase() ?: "Unknown")
-                    HorizontalDivider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.background, thickness = 4.dp)
                     ProfileDetailRow("Phone", userProfile.phone ?: "Unknown")
                 }
             }
@@ -218,8 +220,10 @@ fun ProfileSectionTitle(title: String) {
 fun ProfileDetailRow(label: String, value: String) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
+            .fillMaxWidth().height(60.dp)
+            .clickable(
+                role = Role.Button,
+                onClick = { /* No action needed, just the ripple effect */ })
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically

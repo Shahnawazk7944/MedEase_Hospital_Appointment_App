@@ -208,7 +208,8 @@ fun AppointmentCard(
                 Text(
                     text = "Appointment ID: ${appointment.appointmentId}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(end = MaterialTheme.spacing.small)
                 )
                 Text(
                     text = appointment.status,

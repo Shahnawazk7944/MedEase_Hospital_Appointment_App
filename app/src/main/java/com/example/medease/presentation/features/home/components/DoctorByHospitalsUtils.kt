@@ -1,5 +1,6 @@
 package com.example.medease.presentation.features.home.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -132,8 +133,9 @@ fun HospitalDoctorCard(
             .fillMaxWidth()
             .padding(bottom = MaterialTheme.spacing.medium),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 10.dp
+            defaultElevation = 1.dp
         ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = .2f)),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.onBackground,
         ),

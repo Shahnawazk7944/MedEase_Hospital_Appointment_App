@@ -8,6 +8,7 @@ import com.example.medeaseclient.data.firebase.FirebaseWrapper
 import com.example.medeaseclient.data.repository.auth.AuthSuccess
 import com.example.medeaseclient.data.util.HOSPITALS_COLLECTION
 import com.example.medeaseclient.data.util.PreferencesKeys
+import com.example.medeaseclient.domain.model.AppointmentDetails
 import com.example.medeaseclient.domain.model.ClientProfile
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.firestore.FirebaseFirestoreException

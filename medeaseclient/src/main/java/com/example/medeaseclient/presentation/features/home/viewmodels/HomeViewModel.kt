@@ -1,12 +1,15 @@
 package com.example.medeaseclient.presentation.features.home.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.medeaseclient.data.repository.allFeatures.ClientAllFeaturesRepository
 import com.example.medeaseclient.data.repository.auth.ClientDataStoreRepository
 import com.example.medeaseclient.data.repository.home.ClientHomeRepository
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeEvents
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeStates
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +21,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val clientHomeRepository: ClientHomeRepository,
     private val dataStoreRepository: ClientDataStoreRepository,
+    private val clientAllFeaturesRepository: ClientAllFeaturesRepository,
 ) : ViewModel() {
 
     private val _homeState = MutableStateFlow(HomeStates())
@@ -49,6 +53,10 @@ class HomeViewModel @Inject constructor(
                 viewModelScope.launch {
                     getClientProfile(event.clientId)
                 }
+            }
+
+            is HomeEvents.FetchAppointments -> {
+                fetchAppointments(event.hospitalId)
             }
         }
     }
@@ -91,10 +99,24 @@ class HomeViewModel @Inject constructor(
         _homeState.update { it.copy(loading = true) }
         clientHomeRepository.getClientProfile(clientId).onRight { clientProfile ->
             _homeState.update { it.copy(clientProfile = clientProfile, loading = false) }
+            homeEvents(HomeEvents.FetchAppointments(homeState.value.clientProfile?.hospitalId ?:"no hospital id found"))
         }.onLeft { failure ->
             _homeState.update { it.copy(loading = false, clientProfileFailure = failure) }
             delay(4000)
             _homeState.update { it.copy(clientProfileFailure = null) }
+        }
+    }
+
+    private fun fetchAppointments(hospitalId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            clientAllFeaturesRepository.fetchHospitalAppointments(hospitalId).collect {
+                it.onRight { appointments ->
+                    Log.d("----", "${appointments.size}")
+                    _homeState.update { it.copy(todayAppointments = appointments) }
+                }.onLeft { failure ->
+                    _homeState.update { it.copy(appointmentsFailure = failure) }
+                }
+            }
         }
     }
 }
