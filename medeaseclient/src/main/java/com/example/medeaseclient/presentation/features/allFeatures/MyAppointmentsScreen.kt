@@ -1,24 +1,13 @@
-package com.example.medease.presentation.features.allFeatures
+package com.example.medeaseclient.presentation.features.allFeatures
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,11 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -47,29 +31,28 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
-import com.example.medease.R
-import com.example.medease.domain.model.AppointmentDetails
-import com.example.medease.domain.model.Bed
-import com.example.medease.domain.model.Doctor
-import com.example.medease.domain.model.HospitalWithDoctors
-import com.example.medease.presentation.features.allFeatures.viewModels.MyAppointmentsEvents
-import com.example.medease.presentation.features.allFeatures.viewModels.MyAppointmentsStates
-import com.example.medease.presentation.features.allFeatures.viewModels.MyAppointmentsViewModel
-import com.example.medease.presentation.features.common.CustomTopBar
-import com.example.medease.presentation.features.common.LoadingDialog
-import com.example.medease.presentation.features.common.getSnackbarMessage
-import com.example.medease.presentation.features.common.rememberQrBitmap
+import com.example.medeaseclient.domain.model.AppointmentDetails
+import com.example.medeaseclient.domain.model.Bed
+import com.example.medeaseclient.domain.model.Doctor
+import com.example.medeaseclient.domain.model.HospitalWithDoctors
+import com.example.medeaseclient.presentation.features.allFeatures.viewModels.MyAppointmentsEvents
+import com.example.medeaseclient.presentation.features.allFeatures.viewModels.MyAppointmentsStates
+import com.example.medeaseclient.presentation.features.allFeatures.viewModels.MyAppointmentsViewModel
+import com.example.medeaseclient.presentation.features.common.CustomTopBar
+import com.example.medeaseclient.presentation.features.common.LoadingDialog
+import com.example.medeaseclient.presentation.features.common.getSnackbarToastMessage
+import com.example.medeaseclient.presentation.features.home.components.AppointmentCard
 
 @Composable
 fun MyAppointmentsScreen(
     viewModel: MyAppointmentsViewModel = hiltViewModel(),
-    userId: String,
+    hospitalId: String,
     navController: NavHostController
 ) {
     LaunchedEffect(Unit) {
         viewModel.myAppointmentsEvents(
             MyAppointmentsEvents.GetMyAppointments(
-                userId
+                hospitalId
             )
         )
     }
@@ -78,7 +61,7 @@ fun MyAppointmentsScreen(
 
     LaunchedEffect(key1 = state.failure) {
         state.failure?.let {
-            val errorMessage = getSnackbarMessage(state.failure)
+            val errorMessage = getSnackbarToastMessage(state.failure)
             snackbarHostState.showSnackbar(
                 message = errorMessage,
                 duration = SnackbarDuration.Short,
@@ -108,7 +91,7 @@ fun MyAppointmentsContent(
                 onBackClick = { onBackClick.invoke() },
                 title = {
                     Text(
-                        text = "My Appointments",
+                        text = "Appointments",
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Center,
                     )
@@ -142,7 +125,7 @@ fun MyAppointmentsContent(
         LazyColumn(
             contentPadding = paddingValues,
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize().padding(horizontal = MaterialTheme.spacing.large),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (state.loading) {
@@ -151,11 +134,10 @@ fun MyAppointmentsContent(
             if (state.appointments.isNotEmpty()) {
                 items(state.appointments, key = { it.appointmentId }) { appointment ->
                     AppointmentCard(
-                        appointment = appointment
-                    ) {
-                        // Navigating or opening another screen on click
-                        // Use the appointment id or any desired information
-                    }
+                        appointment = appointment,
+                        onConfirmClick = {},
+                        onCancelClick = {},
+                    )
                 }
             } else if (!state.loading) {
                 item {
@@ -173,165 +155,6 @@ fun MyAppointmentsContent(
                         )
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun AppointmentCard(
-    appointment: AppointmentDetails,
-    onItemClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = MaterialTheme.spacing.small)
-            .clickable {},
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.onBackground,
-        ),
-        shape = RectangleShape
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.large),
-        ) {
-            // Appointment ID and Status
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = MaterialTheme.spacing.small),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Appointment ID: ${appointment.appointmentId}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(end = MaterialTheme.spacing.small)
-                )
-                Text(
-                    text = appointment.status,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (appointment.status == "Pending confirmation" || appointment.status == "Appointment cancelled")  Color(0xFFFF5722) else Color(0xFF4CAF50),
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            // Divider for separation
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
-                thickness = 1.dp
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = MaterialTheme.spacing.small),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = "Hospital: ${appointment.hospital.hospitalName}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "City: ${appointment.hospital.hospitalCity}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Contact: ${appointment.hospital.hospitalPhone}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
-                    Text(
-                        text = "Doctor: ${appointment.doctor.name}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Text(
-                        text = "Specialist: ${appointment.doctor.specialist}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Experience: ${appointment.doctor.experience} years",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                // QR Code
-                if (appointment.status == "Pending confirmation") {
-                    Image(
-                        painter = painterResource(id = R.drawable.blur_qr),
-                        contentDescription = "Blur QR Code",
-                        modifier = Modifier
-                            .size(100.dp)
-                    )
-                } else if(appointment.status != "Appointment cancelled") {
-                    val qrCodeContent =
-                        "${appointment.appointmentId}-${appointment.bookingDate}-${appointment.bookingTime}"
-                    val qrCodeBitmap = rememberQrBitmap(content = qrCodeContent, size = 150.dp)
-
-                    qrCodeBitmap?.let { bitmap ->
-                        Image(
-                            painter = remember(bitmap) { BitmapPainter(bitmap.asImageBitmap()) },
-                            contentDescription = "QR Code",
-                            modifier = Modifier
-                                .size(100.dp)
-                        )
-                    }
-                }
-            }
-
-            // Bed Information (optional)
-            appointment.bed?.let { bed ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = MaterialTheme.spacing.small)
-                ) {
-                    Text(
-                        text = "Bed Type: ${bed.bedType}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Purpose: ${bed.purpose}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            // Booking Date, Time, and Price
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = MaterialTheme.spacing.small),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = "Booking Date: ${appointment.bookingDate}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Time: ${appointment.bookingTime}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Text(
-                    text = "Total Price: ${appointment.totalPrice}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.secondary
-                )
             }
         }
     }
@@ -362,7 +185,7 @@ fun MyAppointmentsContentPreview() {
                     ),
                     bookingDate = "2023-12-15",
                     bookingTime = "10:00 AM",
-                    status = "Confirmed",
+                    status = "Appointment Completed",
                     totalPrice = "1000",
                 ),
                 AppointmentDetails(
@@ -428,7 +251,7 @@ fun MyAppointmentsContentPreview() {
                 AppointmentDetails(
                     appointmentId = "5",
                     hospital = HospitalWithDoctors(
-                        hospitalName = "Fortis Hospital",
+                        hospitalName = "Forties Hospital",
                         hospitalCity = "Kolkata",
                         hospitalPhone = "8888888888",
                     ),

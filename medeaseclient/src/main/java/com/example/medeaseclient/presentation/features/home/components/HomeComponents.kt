@@ -47,6 +47,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.example.designsystem.components.PrimaryButton
+import com.example.designsystem.components.SecondaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
 import com.example.medeaseclient.domain.model.AppointmentDetails
@@ -57,7 +58,8 @@ import com.example.medeaseclient.domain.model.HospitalWithDoctors
 @Composable
 fun AppointmentCard(
     appointment: AppointmentDetails,
-    onItemClick: () -> Unit
+    onConfirmClick: (appointmentId: String) -> Unit,
+    onCancelClick: (appointmentId: String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -94,9 +96,10 @@ fun AppointmentCard(
                 Text(
                     text = appointment.status,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (appointment.status == "Booking Confirmed") Color(0xFF4CAF50) else Color(
+                    color = if (appointment.status == "Pending confirmation" || appointment.status == "Appointment cancelled") Color(
                         0xFFFF5722
-                    )
+                    ) else Color(0xFF4CAF50),
+                    textAlign = TextAlign.Center
                 )
             }
 
@@ -142,7 +145,6 @@ fun AppointmentCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
             // Booking Date, Time, and Price
             Row(
                 modifier = Modifier
@@ -168,113 +170,134 @@ fun AppointmentCard(
                     color = MaterialTheme.colorScheme.secondary
                 )
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(top = MaterialTheme.spacing.small),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                PrimaryButton(
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            if (appointment.status == "Appointment Completed" || appointment.status == "Appointment cancelled") {
+                SecondaryButton(
                     onClick = {},
                     shape = MaterialTheme.shapes.medium,
-                    label = "Mark Complete",
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 0.dp,
-                        pressedElevation = 2.dp
-                    ),
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(0.dp)
+                    label = if (appointment.status == "Appointment Completed") "Appointment Completed" else "Appointment Cancelled",
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = if (appointment.status == "Appointment cancelled") MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primary),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = if (appointment.status == "Appointment cancelled") MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primary
+                    )
                 )
-
-                Box {
-                    OutlinedIconButton(
-                        onClick = { expanded = true },
-                        modifier = Modifier.height(40.dp),
-                        colors = IconButtonDefaults.outlinedIconButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                        ),
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.primary
-                        ),
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(top = MaterialTheme.spacing.small),
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    PrimaryButton(
+                        onClick = {},
                         shape = MaterialTheme.shapes.medium,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            tint = MaterialTheme.colorScheme.primary,
-                            contentDescription = "More icon"
-                        )
-                    }
+                        label = "Mark Complete",
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 0.dp,
+                            pressedElevation = 2.dp
+                        ),
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(0.dp)
+                    )
 
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(MaterialTheme.spacing.medium),
-                        offset = DpOffset((-4).dp, 4.dp),
-                        tonalElevation = 2.dp,
-                        shadowElevation = 6.dp
-                    ) {
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "Confirm Appointment",
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            },
-                            onClick = {
-                                expanded = false
+                    Box {
+                        OutlinedIconButton(
+                            onClick = { expanded = true },
+                            modifier = Modifier.height(40.dp),
+                            colors = IconButtonDefaults.outlinedIconButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                            ),
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            ),
+                            shape = MaterialTheme.shapes.medium,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                tint = MaterialTheme.colorScheme.primary,
+                                contentDescription = "More icon"
+                            )
+                        }
 
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    contentDescription = "reschedule"
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(MaterialTheme.spacing.medium),
+                            offset = DpOffset((-4).dp, 4.dp),
+                            tonalElevation = 2.dp,
+                            shadowElevation = 6.dp
+                        ) {
+                            if (appointment.status == "Pending confirmation") {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "Confirm Appointment",
+                                            style = MaterialTheme.typography.titleMedium,
+                                        )
+                                    },
+                                    onClick = {
+                                        expanded = false
+
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            contentDescription = "reschedule"
+                                        )
+                                    }
                                 )
                             }
-                        )
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "Re-Schedule Appointment",
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            },
-                            onClick = {
-                                expanded = false
 
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Schedule,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    contentDescription = "reschedule"
-                                )
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "Cancel Appointment",
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            },
-                            onClick = {
-                                expanded = false
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Cancel,
-                                    tint = MaterialTheme.colorScheme.errorContainer,
-                                    contentDescription = "cancel icon"
-                                )
-                            }
-                        )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Re-Schedule Appointment",
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Schedule,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Cancel Appointment",
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Cancel,
+                                        tint = MaterialTheme.colorScheme.errorContainer,
+                                        contentDescription = "cancel icon"
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
+
             }
         }
     }
@@ -349,7 +372,7 @@ fun AppointmentCardPreview() {
                 ),
                 bookingDate = "2023-12-15",
                 bookingTime = "10:00 AM",
-                status = "Confirmed",
+                status = "Appointment Completed",
                 totalPrice = "1000",
             ),
             AppointmentDetails(
@@ -415,7 +438,7 @@ fun AppointmentCardPreview() {
             AppointmentDetails(
                 appointmentId = "5",
                 hospital = HospitalWithDoctors(
-                    hospitalName = "Fortis Hospital",
+                    hospitalName = "Forties Hospital",
                     hospitalCity = "Kolkata",
                     hospitalPhone = "8888888888",
                 ),
@@ -434,11 +457,14 @@ fun AppointmentCardPreview() {
                 totalPrice = "2000",
             ),
         )
-        repeat(appointments.size) {
-            AppointmentCard(
-                appointment = appointments[it],
-                onItemClick = {}
-            )
+        Column(modifier = Modifier.fillMaxSize()) {
+            repeat(appointments.size) {
+                AppointmentCard(
+                    appointment = appointments[it],
+                    onConfirmClick = {},
+                    onCancelClick = {}
+                )
+            }
         }
     }
 }

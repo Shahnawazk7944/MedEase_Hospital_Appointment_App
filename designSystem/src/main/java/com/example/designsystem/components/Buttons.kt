@@ -77,7 +77,7 @@ fun SecondaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     colors: ButtonColors = ButtonDefaults.outlinedButtonColors(
-        contentColor = MaterialTheme.colorScheme.onPrimary,
+        contentColor = MaterialTheme.colorScheme.primary,
     ),
     border: BorderStroke = BorderStroke(
         width = 1.dp,

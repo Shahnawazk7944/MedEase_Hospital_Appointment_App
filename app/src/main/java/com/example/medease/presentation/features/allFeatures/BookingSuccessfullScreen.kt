@@ -153,7 +153,7 @@ fun BookingSuccessScreenContent(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    "Your booking is confirmed.",
+                    state.booking.appointmentDetails.status,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -187,7 +187,7 @@ fun BookingSuccessScreenContent(
                                     modifier = Modifier
                                         .size(150.dp)
                                 )
-                            } else {
+                            } else if(state.booking.appointmentDetails.status != "Appointment cancelled") {
                                 if (state.booking.appointmentDetails.appointmentId.isNotBlank()) {
                                     QrCodeImage(
                                         content = "${state.booking.appointmentDetails.appointmentId}-${state.booking.appointmentDetails.bookingDate}-${state.booking.appointmentDetails.bookingTime}",

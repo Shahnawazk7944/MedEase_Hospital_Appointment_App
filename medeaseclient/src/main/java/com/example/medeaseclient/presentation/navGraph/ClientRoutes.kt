@@ -26,7 +26,7 @@ sealed class ClientRoutes {
     ) : ClientRoutes()
 
     @Serializable
-    object AppointmentScreen : ClientRoutes()
+    data class AppointmentScreen(val hospitalId: String)  : ClientRoutes()
 
     @Serializable
     data class DoctorScreen(val hospitalId: String) : ClientRoutes()
