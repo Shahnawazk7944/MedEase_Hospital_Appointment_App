@@ -10,6 +10,7 @@ const val BEDS_COLLECTION = "beds"
 const val APPOINTMENTS_COLLECTION = "appointments"
 const val USERS_COLLECTION = "users"
 const val TRANSACTIONS_COLLECTION = "transactions"
+const val USER_HEALTH_RECORDS_COLLECTION = "healthRecords"
 
 object PreferencesKeys {
     val CLIENT_REMEMBER_ME = booleanPreferencesKey("client_remember_me")

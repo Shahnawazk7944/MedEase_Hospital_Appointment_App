@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-01-18T19:33:20.333174200Z">
+        <DropdownSelection timestamp="2025-01-18T20:06:42.024650200Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Faraz\.android\avd\Pixel_Fold_API_34.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=RZ8R917Y52W" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="medeaseclient">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-01-18T19:36:37.091879900Z">
+        <DropdownSelection timestamp="2025-01-18T20:02:17.525288300Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Faraz\.android\avd\Pixel_Fold_API_34.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=RZ8R917Y52W" />
             </handle>
           </Target>
         </DropdownSelection>
