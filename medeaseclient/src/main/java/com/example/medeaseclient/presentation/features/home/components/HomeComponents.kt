@@ -59,7 +59,9 @@ import com.example.medeaseclient.domain.model.HospitalWithDoctors
 fun AppointmentCard(
     appointment: AppointmentDetails,
     onConfirmClick: (appointmentId: String) -> Unit,
-    onCancelClick: (appointmentId: String) -> Unit
+    onCancelClick: (appointmentId: String) -> Unit,
+    onRescheduleClick: (appointmentId: String, appointment: AppointmentDetails) -> Unit,
+    onCompletedClick: (appointmentId: String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -172,11 +174,11 @@ fun AppointmentCard(
             }
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-            if (appointment.status == "Appointment Completed" || appointment.status == "Appointment cancelled") {
+            if (appointment.status == "Appointment completed" || appointment.status == "Appointment cancelled") {
                 SecondaryButton(
                     onClick = {},
                     shape = MaterialTheme.shapes.medium,
-                    label = if (appointment.status == "Appointment Completed") "Appointment Completed" else "Appointment Cancelled",
+                    label = if (appointment.status == "Appointment completed") "Appointment Completed" else "Appointment Cancelled",
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = if (appointment.status == "Appointment cancelled") MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primary),
@@ -195,7 +197,9 @@ fun AppointmentCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     PrimaryButton(
-                        onClick = {},
+                        onClick = {
+                            onCompletedClick.invoke(appointment.appointmentId)
+                        },
                         shape = MaterialTheme.shapes.medium,
                         label = "Mark Complete",
                         elevation = ButtonDefaults.buttonElevation(
@@ -245,7 +249,7 @@ fun AppointmentCard(
                                     },
                                     onClick = {
                                         expanded = false
-
+                                        onConfirmClick.invoke(appointment.appointmentId)
                                     },
                                     leadingIcon = {
                                         Icon(
@@ -266,6 +270,7 @@ fun AppointmentCard(
                                 },
                                 onClick = {
                                     expanded = false
+                                    onRescheduleClick.invoke(appointment.appointmentId, appointment)
 
                                 },
                                 leadingIcon = {
@@ -285,6 +290,7 @@ fun AppointmentCard(
                                 },
                                 onClick = {
                                     expanded = false
+                                    onCancelClick.invoke(appointment.appointmentId)
                                 },
                                 leadingIcon = {
                                     Icon(
@@ -462,7 +468,9 @@ fun AppointmentCardPreview() {
                 AppointmentCard(
                     appointment = appointments[it],
                     onConfirmClick = {},
-                    onCancelClick = {}
+                    onCancelClick = {},
+                    onRescheduleClick = { _, _ -> },
+                    onCompletedClick = {}
                 )
             }
         }

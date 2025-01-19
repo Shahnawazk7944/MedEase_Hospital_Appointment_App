@@ -6,11 +6,15 @@ import arrow.core.left
 import arrow.core.right
 import com.example.medeaseclient.data.firebase.FirebaseWrapper
 import com.example.medeaseclient.data.util.APPOINTMENTS_COLLECTION
+import com.example.medeaseclient.data.util.USERS_COLLECTION
+import com.example.medeaseclient.data.util.USER_HEALTH_RECORDS_COLLECTION
 import com.example.medeaseclient.domain.model.AppointmentDetails
+import com.example.medeaseclient.domain.model.HealthRecord
 import com.google.firebase.firestore.DocumentChange
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class ClientAllFeaturesRepositoryImpl @Inject constructor(
@@ -19,10 +23,11 @@ class ClientAllFeaturesRepositoryImpl @Inject constructor(
 
     private val firestore = firebaseWrapper.firestore
     private val appointmentDatabase = firestore.collection(APPOINTMENTS_COLLECTION)
+    private val usersDatabase = firestore.collection(USERS_COLLECTION)
 
     override suspend fun fetchHospitalAppointments(hospitalId: String): Flow<Either<ClientAllFeaturesFailure, List<AppointmentDetails>>> {
         return callbackFlow {
-            Log.d("---repo",hospitalId)
+            Log.d("---repo", hospitalId)
             val listenerRegistration = appointmentDatabase.whereEqualTo("hospitalId", hospitalId)
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) {
@@ -62,6 +67,66 @@ class ClientAllFeaturesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun changeAppointmentStatus(
+        appointmentId: String,
+        newStatus: String
+    ): Either<ClientAllFeaturesFailure, ClientAllFeaturesSuccess> {
+        return try {
+            appointmentDatabase.document(appointmentId).update(mapOf("status" to newStatus)).await()
+            if (newStatus == "Appointment confirmed") {
+                ClientAllFeaturesSuccess.AppointmentConfirmed.right()
+            } else {
+                ClientAllFeaturesSuccess.AppointmentCancelled.right()
+            }
+        } catch (e: Exception) {
+            ClientAllFeaturesFailure.DatabaseError(e).left()
+        }
+    }
+
+    override suspend fun reScheduleAppointment(
+        appointmentId: String,
+        newDate: String,
+        newTime: String,
+        newStatus: String
+    ): Either<ClientAllFeaturesFailure, ClientAllFeaturesSuccess> {
+        return try {
+            appointmentDatabase.document(appointmentId).update(
+                mapOf(
+                    "status" to newStatus,
+                    "bookingDate" to newDate,
+                    "bookingTime" to newTime
+                )
+            ).await()
+            ClientAllFeaturesSuccess.AppointmentReScheduled.right()
+        } catch (e: Exception) {
+            ClientAllFeaturesFailure.DatabaseError(e).left()
+        }
+    }
+
+    override suspend fun markCompletedAppointment(
+        appointmentId: String,
+        healthRemark: String,
+        userId: String,
+        newStatus: String
+    ): Either<ClientAllFeaturesFailure, ClientAllFeaturesSuccess> {
+
+        return try {
+            appointmentDatabase.document(appointmentId).update(mapOf("status" to newStatus, "healthRemark" to healthRemark)).await()
+            val healthRecordDocumentReference = usersDatabase.document(userId).collection(
+                USER_HEALTH_RECORDS_COLLECTION
+            ).document("HLR-$appointmentId")
+            val healthRecord = HealthRecord(
+                healthRecordId = healthRecordDocumentReference.id,
+                appointmentId = appointmentId,
+                healthRemark = healthRemark
+            )
+            healthRecordDocumentReference.set(healthRecord).await()
+            ClientAllFeaturesSuccess.AppointmentCompleted.right()
+        } catch (e: Exception) {
+            ClientAllFeaturesFailure.DatabaseError(e).left()
+        }
+    }
+}
 //    override suspend fun updateDoctor(doctor: Doctor): Either<DoctorsFailure, DoctorsSuccess> {
 //        return try {
 //            database.document(doctor.doctorId).set(doctor).await()
@@ -221,6 +286,4 @@ class ClientAllFeaturesRepositoryImpl @Inject constructor(
 //            DoctorsFailure.DatabaseError(e).left()
 //        }
 //    }
-
-}
 

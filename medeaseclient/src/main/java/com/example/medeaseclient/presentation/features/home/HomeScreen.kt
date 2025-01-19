@@ -3,17 +3,22 @@ package com.example.medeaseclient.presentation.features.home
 
 import ClientRoutes
 import android.app.Activity
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -22,14 +27,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Bed
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.MedicalInformation
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -37,10 +48,14 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,8 +68,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.example.designsystem.components.OutlinedDateInputField
+import com.example.designsystem.components.OutlinedInputField
+import com.example.designsystem.components.OutlinedTimeInputField
+import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
+import com.example.medeaseclient.domain.model.AppointmentDetails
 import com.example.medeaseclient.presentation.features.common.CustomTopBar
 import com.example.medeaseclient.presentation.features.common.HomeHeadings
 import com.example.medeaseclient.presentation.features.common.LoadingDialog
@@ -62,6 +82,9 @@ import com.example.medeaseclient.presentation.features.common.getSnackbarToastMe
 import com.example.medeaseclient.presentation.features.home.components.AppointmentCard
 import com.example.medeaseclient.presentation.features.home.components.MedicalOptionItem
 import com.example.medeaseclient.presentation.features.home.viewmodels.HomeViewModel
+import com.example.medeaseclient.presentation.features.home.viewmodels.events.AppointmentBottomSheetContent
+import com.example.medeaseclient.presentation.features.home.viewmodels.events.AppointmentOperationEvents
+import com.example.medeaseclient.presentation.features.home.viewmodels.events.AppointmentOperationsStates
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeEvents
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeStates
 
@@ -74,6 +97,7 @@ fun HomeScreen(
     val state by viewModel.homeState.collectAsStateWithLifecycle()
     val activity = (LocalContext.current as? Activity)
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     BackHandler {
         if (activity?.isTaskRoot == true) {
@@ -89,6 +113,24 @@ fun HomeScreen(
                 withDismissAction = true
             )
             viewModel.homeEvents(HomeEvents.RemoveFailure(null))
+        }
+    }
+    LaunchedEffect(key1 = state.appointmentStatusFailure) {
+        state.appointmentStatusFailure?.let {
+            val errorMessage = getSnackbarToastMessage(state.appointmentStatusFailure)
+            snackbarHostState.showSnackbar(
+                message = errorMessage,
+                duration = SnackbarDuration.Short,
+                withDismissAction = true
+            )
+            viewModel.appointmentOperationsEvents(AppointmentOperationEvents.ClearAppointmentStatus)
+        }
+    }
+    LaunchedEffect(key1 = state.appointmentStatusSuccess) {
+        state.appointmentStatusSuccess?.let {
+            val successMessage = getSnackbarToastMessage(state.appointmentStatusSuccess)
+            Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show()
+            viewModel.appointmentOperationsEvents(AppointmentOperationEvents.ClearAppointmentStatus)
         }
     }
     LaunchedEffect(key1 = state.clientIdFailure) {
@@ -120,6 +162,7 @@ fun HomeScreen(
         state = state,
         snackbarHostState = snackbarHostState,
         event = viewModel::homeEvents,
+        appointmentEvent = viewModel::appointmentOperationsEvents,
         onBackClick = {
             if (activity?.isTaskRoot == true) {
                 activity.finishAndRemoveTask()
@@ -134,7 +177,12 @@ fun HomeScreen(
                     )
                 )
 
-                1 -> navController.navigate(ClientRoutes.AppointmentScreen(hospitalId = state.clientProfile?.hospitalId ?: "No ID Found",))
+                1 -> navController.navigate(
+                    ClientRoutes.AppointmentScreen(
+                        hospitalId = state.clientProfile?.hospitalId ?: "No ID Found",
+                    )
+                )
+
                 2 -> navController.navigate(
                     ClientRoutes.BedScreen(
                         hospitalId = state.clientProfile?.hospitalId
@@ -158,11 +206,13 @@ fun HomeScreen(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
     state: HomeStates,
     snackbarHostState: SnackbarHostState,
     event: (HomeEvents) -> Unit,
+    appointmentEvent: (AppointmentOperationEvents) -> Unit,
     onBackClick: () -> Unit,
     onMedicalOptionClick: (Int) -> Unit
 ) {
@@ -193,6 +243,9 @@ fun HomeContent(
             }
         },
     ) { paddingValues ->
+        val scope = rememberCoroutineScope()
+        val sheetState = rememberModalBottomSheetState()
+        var bottomSheetContent by remember { mutableStateOf<AppointmentBottomSheetContent?>(null) }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -262,12 +315,299 @@ fun HomeContent(
                 items(state.todayAppointments, key = { it.appointmentId }) { appointment ->
                     AppointmentCard(
                         appointment = appointment,
-                        onConfirmClick = {},
-                        onCancelClick = {}
+                        onConfirmClick = {
+                            appointmentEvent(
+                                AppointmentOperationEvents.ChangeAppointmentStatus(
+                                    appointment.appointmentId,
+                                    "Appointment confirmed"
+                                )
+                            )
+                        },
+                        onCancelClick = {
+                            appointmentEvent(
+                                AppointmentOperationEvents.ChangeAppointmentStatus(
+                                    appointment.appointmentId,
+                                    "Appointment cancelled"
+                                )
+                            )
+                        },
+                        onRescheduleClick = { appointmentId, appointment ->
+                            bottomSheetContent =
+                                AppointmentBottomSheetContent.ReScheduleAppointment(
+                                    appointmentId = appointmentId,
+                                    appointmentDetails = appointment,
+                                    newStatus = "Appointment rescheduled"
+                                )
+                        },
+                        onCompletedClick = {
+                            bottomSheetContent = AppointmentBottomSheetContent.CompleteAppointment(
+                                appointmentId = appointment.appointmentId,
+                                userId = appointment.userId,
+                                newStatus =  "Appointment completed"
+                            )
+                        }
                     )
                 }
             }
 
+        }
+
+        if (bottomSheetContent != null) {
+            ModalBottomSheet(
+                containerColor = MaterialTheme.colorScheme.background,
+                onDismissRequest = {
+                    appointmentEvent(AppointmentOperationEvents.ClearReScheduledAppointment)
+                    appointmentEvent(AppointmentOperationEvents.ClearCompletedAppointment)
+
+                    bottomSheetContent = null
+                },
+                sheetState = sheetState
+            ) {
+                when (val content = bottomSheetContent) {
+                    is AppointmentBottomSheetContent.CompleteAppointment -> {
+                        CompleteAppointmentBottomSheetContent(
+                            state = state,
+                            events = appointmentEvent,
+                            onCompleteRequest = { healthRemark ->
+                                appointmentEvent(AppointmentOperationEvents.CompleteAppointment(
+                                    appointmentId = content.appointmentId,
+                                    healthRemark = healthRemark,
+                                    userId = content.userId,
+                                    newStatus = content.newStatus
+                                ))
+                                appointmentEvent(AppointmentOperationEvents.ClearCompletedAppointment)
+                                bottomSheetContent = null // Close the sheet on action
+
+                            }
+                        )
+                    }
+
+                    is AppointmentBottomSheetContent.ReScheduleAppointment -> {
+                        ReScheduleAppointmentBottomSheetContent(
+                            state = state,
+                            appointment = content.appointmentDetails,
+                            events = appointmentEvent,
+                            onReScheduleRequest = { newDate, newTime ->
+                                appointmentEvent(AppointmentOperationEvents.ReScheduleAppointment(
+                                    appointmentId = content.appointmentId,
+                                    newDate = newDate,
+                                    newTime = newTime,
+                                    newStatus = content.newStatus
+                                ))
+                                appointmentEvent(AppointmentOperationEvents.ClearReScheduledAppointment)
+                                bottomSheetContent = null // Close the sheet on action
+                            }
+                        )
+                    }
+
+                    null -> TODO()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CompleteAppointmentBottomSheetContent(
+    state: AppointmentOperationsStates,
+    events: (AppointmentOperationEvents) -> Unit,
+    onCompleteRequest: (healthRemark: String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(MaterialTheme.spacing.large),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Complete Appointment!",
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.secondary
+        )
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = MaterialTheme.spacing.medium),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(MaterialTheme.spacing.large)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                OutlinedInputField(
+                    value = state.addHealthRemark,
+                    onChange = {
+                        events(AppointmentOperationEvents.ChangeAddHealthRemark(it))
+                    },
+                    label = "Add Health Remark",
+                    placeholder = {
+                        Text(
+                            text = "Add Health Remark or NA",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Description,
+                            contentDescription = "Report icon",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    error = state.addHealthRemarkError,
+                    maxLines = 1
+                )
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                PrimaryButton(
+                    onClick = { onCompleteRequest.invoke(state.addHealthRemark) },
+                    shape = RoundedCornerShape(MaterialTheme.spacing.large),
+                    label = "Mark as Complete",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.End),
+                    enabled = !(state.addHealthRemark.isBlank() || state.addHealthRemarkError != null)
+                )
+
+            }
+        }
+    }
+}
+
+@Composable
+fun ReScheduleAppointmentBottomSheetContent(
+    state: AppointmentOperationsStates,
+    appointment: AppointmentDetails,
+    events: (AppointmentOperationEvents) -> Unit,
+    onReScheduleRequest: (newDate: String, newTime: String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(MaterialTheme.spacing.large),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Re-Schedule Appointment!",
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.secondary
+        )
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = MaterialTheme.spacing.medium),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(MaterialTheme.spacing.large)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ) {
+                    Text(
+                        text = "Availability - ",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "${appointment.doctor.availabilityFrom} - ${appointment.doctor.availabilityTo}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+                    thickness = 1.dp
+                )
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    OutlinedDateInputField(
+                        date = state.newAppointmentDate,
+                        onDateChange = {
+                            events(
+                                AppointmentOperationEvents.ChangeNewAppointmentDate(
+                                    newDate = it,
+                                    fromDate = appointment.doctor.availabilityFrom,
+                                    toDate = appointment.doctor.availabilityTo
+                                )
+                            )
+                        },
+                        label = "New Date",
+                        placeholder = {
+                            Text(
+                                text = "20-01-2024",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        },
+                        modifier = Modifier.weight(1f),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.CalendarMonth,
+                                contentDescription = "Calendar icon",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        error = state.newAppointmentDateError,
+                    )
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
+                    OutlinedTimeInputField(
+                        time = state.newAppointmentTime,
+                        onTimeChange = {
+                            events(
+                                AppointmentOperationEvents.ChangeNewAppointmentTime(
+                                    it
+                                )
+                            )
+                        },
+                        label = "New Time",
+                        placeholder = {
+                            Text(
+                                text = "12:30 PM",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        },
+                        modifier = Modifier.weight(1f),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.AccessTime,
+                                contentDescription = "Watch icon",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        error = state.newAppointmentTimeError,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                PrimaryButton(
+                    onClick = {
+                        onReScheduleRequest.invoke(state.newAppointmentDate, state.newAppointmentTime)
+                    },
+                    shape = RoundedCornerShape(MaterialTheme.spacing.large),
+                    label = "Re-Schedule Appointment",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.End),
+                    enabled = !(state.newAppointmentDateError != null || state.newAppointmentTimeError != null || state.newAppointmentDate.isBlank() || state.newAppointmentTime.isBlank())
+                )
+
+            }
         }
     }
 }
@@ -323,6 +663,7 @@ fun HomeContentPreview() {
     val state = HomeStates()
     val snackbarHostState = SnackbarHostState()
     val event: (HomeEvents) -> Unit = {}
+    val appointmentEvent: (AppointmentOperationEvents) -> Unit = {}
     val onBackClick: () -> Unit = {}
     MedEaseTheme {
         HomeContent(
@@ -330,7 +671,8 @@ fun HomeContentPreview() {
             snackbarHostState = snackbarHostState,
             event = event,
             onBackClick = onBackClick,
-            onMedicalOptionClick = { }
+            onMedicalOptionClick = { },
+            appointmentEvent = appointmentEvent
         )
     }
 }

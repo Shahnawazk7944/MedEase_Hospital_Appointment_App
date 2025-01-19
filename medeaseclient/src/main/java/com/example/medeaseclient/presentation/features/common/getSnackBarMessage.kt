@@ -1,6 +1,7 @@
 package com.example.medeaseclient.presentation.features.common
 
 import com.example.medeaseclient.data.repository.allFeatures.ClientAllFeaturesFailure
+import com.example.medeaseclient.data.repository.allFeatures.ClientAllFeaturesSuccess
 import com.example.medeaseclient.data.repository.auth.GetRememberMeAndIDPreferencesFailure
 import com.example.medeaseclient.data.repository.auth.SignInWithEmailAndPasswordFailure
 import com.example.medeaseclient.data.repository.auth.SignupWithEmailAndPasswordFailure
@@ -47,6 +48,12 @@ fun getSnackbarToastMessage(failure: Any?): String {
         is ClientAllFeaturesFailure.NetworkError -> "No internet connection"
         is ClientAllFeaturesFailure.DatabaseError -> "Database error"
         is ClientAllFeaturesFailure.FetchAppointmentsFailure -> "Failed to fetch appointments"
+
+        is ClientAllFeaturesSuccess.AppointmentsFetched -> "Appointments fetched successfully"
+        is ClientAllFeaturesSuccess.AppointmentCancelled -> "Appointment cancelled successfully"
+        is ClientAllFeaturesSuccess.AppointmentConfirmed -> "Appointment confirmed successfully"
+        is ClientAllFeaturesSuccess.AppointmentReScheduled -> "Appointment re-scheduled successfully"
+        is ClientAllFeaturesSuccess.AppointmentCompleted -> "Appointment completed successfully"
         else -> "An unexpected error occurred"
     }
 }

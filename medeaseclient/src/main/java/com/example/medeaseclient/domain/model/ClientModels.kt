@@ -64,7 +64,8 @@ data class AppointmentDetails(
     val bookingTime: String = "",
     val bookingQuota: String = "",
     val totalPrice: String = "",
-    val status: String = "Booking Confirmed"
+    val status: String = "Booking Confirmed",
+    val healthRemark: String = "NA"
 )
 
 @Serializable
@@ -83,4 +84,10 @@ data class PaymentDetails(
 data class Booking(
     val appointmentDetails: AppointmentDetails = AppointmentDetails(),
     val paymentDetails: PaymentDetails = PaymentDetails()
+)
+@Serializable
+data class HealthRecord(
+    val healthRecordId: String = "",
+    val appointmentId: String = "",
+    val healthRemark: String = "",
 )
