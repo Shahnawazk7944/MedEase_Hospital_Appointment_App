@@ -3,6 +3,8 @@ package com.example.medeaseclient.presentation.features.home
 
 import ClientRoutes
 import android.app.Activity
+import android.icu.text.SimpleDateFormat
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
@@ -51,6 +53,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -87,6 +90,9 @@ import com.example.medeaseclient.presentation.features.home.viewmodels.events.Ap
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.AppointmentOperationsStates
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeEvents
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeStates
+import java.util.Locale
+import java.text.DateFormat
+import java.util.Date
 
 @Composable
 fun HomeScreen(
@@ -246,6 +252,13 @@ fun HomeContent(
         val scope = rememberCoroutineScope()
         val sheetState = rememberModalBottomSheetState()
         var bottomSheetContent by remember { mutableStateOf<AppointmentBottomSheetContent?>(null) }
+        val todayDate by remember {
+            val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy",Locale.getDefault())
+            val formattedDate = simpleDateFormat.format(Date())
+            derivedStateOf {
+              formattedDate
+            }
+        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -311,8 +324,16 @@ fun HomeContent(
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
             }
 
-            if (state.todayAppointments.isNotEmpty()) {
-                items(state.todayAppointments, key = { it.appointmentId }) { appointment ->
+            val todayAppointments =
+                state.todayAppointments.sortedByDescending { it.bookingDate }
+                    .filter { it.bookingDate == todayDate }
+
+            if (todayAppointments.isNotEmpty()) {
+                items(
+                    items = todayAppointments,
+                    key = { it.appointmentId }) { appointment ->
+
+
                     AppointmentCard(
                         appointment = appointment,
                         onConfirmClick = {
@@ -343,12 +364,23 @@ fun HomeContent(
                             bottomSheetContent = AppointmentBottomSheetContent.CompleteAppointment(
                                 appointmentId = appointment.appointmentId,
                                 userId = appointment.userId,
-                                newStatus =  "Appointment completed"
+                                newStatus = "Appointment completed"
                             )
                         }
                     )
                 }
+            } else {
+                item(key = "no_appointments") {
+                    Text(
+                        "No Pending Appointments",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(top = MaterialTheme.spacing.extraLarge)
+                    )
+                }
             }
+
+
 
         }
 
@@ -357,7 +389,6 @@ fun HomeContent(
                 containerColor = MaterialTheme.colorScheme.background,
                 onDismissRequest = {
                     appointmentEvent(AppointmentOperationEvents.ClearReScheduledAppointment)
-                    appointmentEvent(AppointmentOperationEvents.ClearCompletedAppointment)
 
                     bottomSheetContent = null
                 },
@@ -369,12 +400,14 @@ fun HomeContent(
                             state = state,
                             events = appointmentEvent,
                             onCompleteRequest = { healthRemark ->
-                                appointmentEvent(AppointmentOperationEvents.CompleteAppointment(
-                                    appointmentId = content.appointmentId,
-                                    healthRemark = healthRemark,
-                                    userId = content.userId,
-                                    newStatus = content.newStatus
-                                ))
+                                appointmentEvent(
+                                    AppointmentOperationEvents.CompleteAppointment(
+                                        appointmentId = content.appointmentId,
+                                        healthRemark = healthRemark,
+                                        userId = content.userId,
+                                        newStatus = content.newStatus
+                                    )
+                                )
                                 appointmentEvent(AppointmentOperationEvents.ClearCompletedAppointment)
                                 bottomSheetContent = null // Close the sheet on action
 
@@ -388,12 +421,14 @@ fun HomeContent(
                             appointment = content.appointmentDetails,
                             events = appointmentEvent,
                             onReScheduleRequest = { newDate, newTime ->
-                                appointmentEvent(AppointmentOperationEvents.ReScheduleAppointment(
-                                    appointmentId = content.appointmentId,
-                                    newDate = newDate,
-                                    newTime = newTime,
-                                    newStatus = content.newStatus
-                                ))
+                                appointmentEvent(
+                                    AppointmentOperationEvents.ReScheduleAppointment(
+                                        appointmentId = content.appointmentId,
+                                        newDate = newDate,
+                                        newTime = newTime,
+                                        newStatus = content.newStatus
+                                    )
+                                )
                                 appointmentEvent(AppointmentOperationEvents.ClearReScheduledAppointment)
                                 bottomSheetContent = null // Close the sheet on action
                             }
@@ -597,7 +632,10 @@ fun ReScheduleAppointmentBottomSheetContent(
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
                 PrimaryButton(
                     onClick = {
-                        onReScheduleRequest.invoke(state.newAppointmentDate, state.newAppointmentTime)
+                        onReScheduleRequest.invoke(
+                            state.newAppointmentDate,
+                            state.newAppointmentTime
+                        )
                     },
                     shape = RoundedCornerShape(MaterialTheme.spacing.large),
                     label = "Re-Schedule Appointment",
