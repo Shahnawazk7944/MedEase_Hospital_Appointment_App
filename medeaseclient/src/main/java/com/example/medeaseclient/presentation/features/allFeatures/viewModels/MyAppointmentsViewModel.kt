@@ -21,6 +21,7 @@ data class MyAppointmentsStates(
     val loading: Boolean = false,
     val failure: ClientAllFeaturesFailure? = null,
     val appointments: List<AppointmentDetails> = emptyList(),
+    val appointmentsSortBy: String = "All Appointments",
 
     val appointmentStatusFailure: ClientAllFeaturesFailure? = null,
     val appointmentStatusSuccess: ClientAllFeaturesSuccess? = null,
@@ -36,6 +37,7 @@ data class MyAppointmentsStates(
 sealed class MyAppointmentsEvents {
     data class GetMyAppointments(val hospitalId: String) : MyAppointmentsEvents()
     data object RemoveFailure : MyAppointmentsEvents()
+    data class SortAppointmentsBy(val query: String) : MyAppointmentsEvents()
 }
 
 @HiltViewModel
@@ -56,6 +58,10 @@ class MyAppointmentsViewModel @Inject constructor(
 
             MyAppointmentsEvents.RemoveFailure -> {
                 _state.update { it.copy(failure = null) }
+            }
+
+            is MyAppointmentsEvents.SortAppointmentsBy -> {
+                _state.update { it.copy(appointmentsSortBy = event.query) }
             }
         }
     }

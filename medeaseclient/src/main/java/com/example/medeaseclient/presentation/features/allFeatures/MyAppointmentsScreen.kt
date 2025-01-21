@@ -1,5 +1,6 @@
 package com.example.medeaseclient.presentation.features.allFeatures
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,8 +8,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PendingActions
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -121,6 +130,7 @@ fun MyAppointmentsContent(
     snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
 ) {
+    var expanded by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             CustomTopBar(
@@ -133,13 +143,126 @@ fun MyAppointmentsContent(
                     )
                 },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Sort,
-                            contentDescription = "sort icon",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(25.dp)
-                        )
+                    Box {
+                        IconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Sort,
+                                contentDescription = "sort icon",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(25.dp)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(MaterialTheme.spacing.medium),
+                            offset = DpOffset((-4).dp, 4.dp),
+                            tonalElevation = 2.dp,
+                            shadowElevation = 6.dp
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "All Appointments",
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(MyAppointmentsEvents.SortAppointmentsBy("All Appointments"))
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.PendingActions,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Pending Appointments",
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(MyAppointmentsEvents.SortAppointmentsBy("Pending Appointments"))
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.PendingActions,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Confirmed Appointments",
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(MyAppointmentsEvents.SortAppointmentsBy("Confirmed Appointments"))
+
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Re-Scheduled Appointments",
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(MyAppointmentsEvents.SortAppointmentsBy("Re-Scheduled Appointments"))
+
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Schedule,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Cancelled Appointments",
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(MyAppointmentsEvents.SortAppointmentsBy("Cancelled Appointments"))
+
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Cancel,
+                                        tint = MaterialTheme.colorScheme.errorContainer,
+                                        contentDescription = "cancel icon"
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -172,7 +295,15 @@ fun MyAppointmentsContent(
                 item { LoadingDialog(true) }
             }
             if (state.appointments.isNotEmpty()) {
-                items(state.appointments, key = { it.appointmentId }) { appointment ->
+                val sortedAppointments = when(state.appointmentsSortBy){
+                    "All Appointments"-> state.appointments
+                    "Pending Appointments" -> state.appointments.filter { it.status == "Pending" }
+                    "Confirmed Appointments" -> state.appointments.filter { it.status == "Appointment confirmed" }
+                    "Re-Scheduled Appointments" -> state.appointments.filter { it.status == "Appointment rescheduled" }
+                    "Cancelled Appointments" -> state.appointments.filter { it.status == "Appointment cancelled" }
+                    else -> state.appointments
+                }
+                items(sortedAppointments, key = { it.appointmentId }) { appointment ->
                     AppointmentCard(
                         appointment = appointment,
                         onConfirmClick = {
@@ -203,7 +334,7 @@ fun MyAppointmentsContent(
                             bottomSheetContent = AppointmentBottomSheetContent.CompleteAppointment(
                                 appointmentId = appointment.appointmentId,
                                 userId = appointment.userId,
-                               newStatus =  "Appointment completed"
+                                newStatus = "Appointment completed"
                             )
                         }
                     )
