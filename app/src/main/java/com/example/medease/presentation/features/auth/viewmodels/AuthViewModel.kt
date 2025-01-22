@@ -92,6 +92,16 @@ class AuthViewModel @Inject constructor(
             is SignInEvent.RemoveFailure -> {
                 _signInState.update { it.copy(failure = event.newValue) }
             }
+
+            is SignInEvent.ForgotPasswordEmailChanged -> {
+                val error = validator.validateEmail(event.newValue)
+                _signInState.update {
+                    it.copy(
+                        forgotPasswordEmail = event.newValue,
+                        forgotPasswordEmailError = error?.message
+                    )
+                }
+            }
         }
     }
 

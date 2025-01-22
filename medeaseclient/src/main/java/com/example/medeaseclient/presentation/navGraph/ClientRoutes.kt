@@ -11,9 +11,13 @@ sealed class ClientRoutes {
     @Serializable
     object SignInScreen : ClientRoutes()
 
+    @Serializable
+    object ForgotPasswordScreen : ClientRoutes()
+
     //Home
     @Serializable
     object HomeScreen : ClientRoutes()
+
 
     @Serializable
     data class ProfileScreen(

@@ -14,12 +14,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.medease.domain.model.AppointmentDetails
 import com.example.medease.domain.model.UserProfile
+import com.example.medease.presentation.features.allFeatures.AppointmentDetailsScreen
 import com.example.medease.presentation.features.allFeatures.BookingSuccessScreen
 import com.example.medease.presentation.features.allFeatures.HealthRecordsScreen
 import com.example.medease.presentation.features.allFeatures.MyAppointmentsScreen
 import com.example.medease.presentation.features.allFeatures.PaymentScreen
 import com.example.medease.presentation.features.allFeatures.TransactionsScreen
 import com.example.medease.presentation.features.allFeatures.UserProfileScreen
+import com.example.medease.presentation.features.auth.ForgotPasswordScreen
 import com.example.medease.presentation.features.auth.SignInScreen
 import com.example.medease.presentation.features.auth.SignUpScreen
 import com.example.medease.presentation.features.home.HomeScreen
@@ -53,7 +55,13 @@ fun MedEaseNavGraph(
         composable<Routes.SignInScreen> {
             SignInScreen(
                 onSignUpClick = { navController.navigate(Routes.SignUpScreen) },
-                onSuccessFullLogin = { navController.navigate(Routes.HomeScreen) }
+                onSuccessFullLogin = { navController.navigate(Routes.HomeScreen) },
+                onForgotPasswordClick = { navController.navigate(Routes.ForgotPasswordScreen) }
+            )
+        }
+        composable<Routes.ForgotPasswordScreen> {
+            ForgotPasswordScreen(
+               navController = navController
             )
         }
         composable<Routes.HomeScreen> {
@@ -110,6 +118,13 @@ fun MedEaseNavGraph(
                 appointmentId = user.appointmentId,
                 transactionId = user.transactionId,
                 userId = user.userId,
+                navController = navController
+            )
+        }
+        composable<Routes.AppointmentDetailsScreen> { backStackEntry ->
+            val user: Routes.AppointmentDetailsScreen = backStackEntry.toRoute()
+            AppointmentDetailsScreen(
+                appointmentId = user.appointmentId,
                 navController = navController
             )
         }

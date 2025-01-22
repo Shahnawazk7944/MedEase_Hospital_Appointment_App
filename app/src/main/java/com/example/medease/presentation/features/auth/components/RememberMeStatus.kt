@@ -22,7 +22,7 @@ fun RememberMeStatus(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
+        //modifier = Modifier.fillMaxWidth()
     ) {
         RadioButton(
             modifier = Modifier.size(MaterialTheme.spacing.mediumLarge),

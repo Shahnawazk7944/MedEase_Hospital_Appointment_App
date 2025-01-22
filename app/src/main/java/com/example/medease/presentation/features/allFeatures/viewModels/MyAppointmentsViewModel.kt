@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medease.data.repository.allFeatures.UserAllFeaturesFailure
 import com.example.medease.data.repository.allFeatures.UserAllFeaturesRepository
+import com.example.medease.data.repository.allFeatures.UserAllFeaturesSuccess
 import com.example.medease.domain.model.AppointmentDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -16,12 +17,17 @@ import javax.inject.Inject
 data class MyAppointmentsStates(
     val loading: Boolean = false,
     val failure: UserAllFeaturesFailure? = null,
-    val appointments: List<AppointmentDetails> = emptyList()
+    val appointmentStatusSuccess: UserAllFeaturesSuccess? = null,
+    val appointments: List<AppointmentDetails> = emptyList(),
+    val appointmentsSortBy: String = "All Appointments",
 )
 
 sealed class MyAppointmentsEvents {
     data class GetMyAppointments(val userId: String) : MyAppointmentsEvents()
-    data object RemoveFailure : MyAppointmentsEvents()
+    data object RemoveFailureAndSuccess : MyAppointmentsEvents()
+    data class SortAppointmentsBy(val query: String) : MyAppointmentsEvents()
+    data class ChangeAppointmentStatus(val appointmentId: String, val newStatus: String) :
+        MyAppointmentsEvents()
 }
 
 @HiltViewModel
@@ -39,7 +45,11 @@ class MyAppointmentsViewModel @Inject constructor(
                fetchMyAppointments(event.userId)
            }
 
-            MyAppointmentsEvents.RemoveFailure -> {_state.update { it.copy(failure = null) }}
+            MyAppointmentsEvents.RemoveFailureAndSuccess -> {_state.update { it.copy(failure = null, appointmentStatusSuccess = null) }}
+            is MyAppointmentsEvents.SortAppointmentsBy -> {_state.update { it.copy(appointmentsSortBy = event.query) }}
+            is MyAppointmentsEvents.ChangeAppointmentStatus -> {
+                cancelAppointment(event.appointmentId, event.newStatus)
+            }
         }
     }
 
@@ -58,4 +68,30 @@ class MyAppointmentsViewModel @Inject constructor(
             }
         }
     }
+
+    private fun cancelAppointment(appointmentId: String, newStatus: String) {
+        _state.update { it.copy(loading = true) }
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.cancelAppointment(
+                appointmentId = appointmentId,
+                newStatus = newStatus
+            )
+                .onRight { success ->
+                    _state.update {
+                        it.copy(
+                            appointmentStatusSuccess = success,
+                            loading = false
+                        )
+                    }
+                }.onLeft { failure ->
+                    _state.update {
+                        it.copy(
+                            loading = false,
+                            failure = failure
+                        )
+                    }
+                }
+        }
+    }
+
 }
