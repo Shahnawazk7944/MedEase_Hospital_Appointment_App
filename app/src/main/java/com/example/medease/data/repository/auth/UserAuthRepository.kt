@@ -12,6 +12,10 @@ interface UserAuthRepository {
         password: String,
         rememberMe: Boolean
     ): Either<SignInWithEmailAndPasswordFailure, AuthSuccess>
+
+    suspend fun userForgotPassword(
+        email: String,
+    ): Either<SignInWithEmailAndPasswordFailure, Unit>
 }
 
 data class AuthSuccess(val authenticated: Boolean)

@@ -98,6 +98,25 @@ class ClientAuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun clientForgotPassword(email: String): Either<SignInWithEmailAndPasswordFailure, Unit> {
+        try {
+            auth.sendPasswordResetEmail(email).await()
+            return Either.Right(Unit)
+        }catch (e:FirebaseAuthException){
+            val failure = when (e) {
+                is FirebaseAuthInvalidCredentialsException -> {
+                    SignInWithEmailAndPasswordFailure.InvalidCredentials
+                }
+                else -> {
+                    SignInWithEmailAndPasswordFailure.UnknownError(e)
+                }
+            }
+            return Either.Left(failure)
+        }catch (e: FirebaseNetworkException){
+            return Either.Left(SignInWithEmailAndPasswordFailure.NetworkError)
+        }
+    }
+
     private suspend fun saveRememberMe(rememberMe: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.CLIENT_REMEMBER_ME] = rememberMe

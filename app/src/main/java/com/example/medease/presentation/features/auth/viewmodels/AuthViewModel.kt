@@ -11,6 +11,7 @@ import com.example.medease.presentation.features.auth.viewmodels.events.SignInSt
 import com.example.medease.presentation.features.auth.viewmodels.events.SignUpEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignUpStates
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -51,6 +52,10 @@ class AuthViewModel @Inject constructor(
                         rememberMe = event.rememberMe
                     )
                 }
+            }
+
+            is AuthEvent.ForgotPasswordRequest -> {
+                forgotPasswordRequest(email = event.email)
             }
         }
     }
@@ -190,7 +195,24 @@ class AuthViewModel @Inject constructor(
                     )
                 }
             }.onLeft { failure ->
-            _signInState.update { it.copy(failure = failure, loading = false) }
+                _signInState.update { it.copy(failure = failure, loading = false) }
+            }
+    }
+
+    private fun forgotPasswordRequest(email: String) {
+        _signInState.update { it.copy(loading = true) }
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.userForgotPassword(email = email)
+                .onRight { isSuccess ->
+                    _signInState.update {
+                        it.copy(
+                            isForgotPasswordLinkSent = true,
+                            loading = false,
+                        )
+                    }
+                }.onLeft { failure ->
+                    _signInState.update { it.copy(failure = failure, loading = false) }
+                }
         }
     }
 
