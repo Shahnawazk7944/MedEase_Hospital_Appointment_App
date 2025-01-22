@@ -10,6 +10,7 @@ data class SignInStates(
     val passwordError: String? = null,
     val forgotPasswordEmail: String = "",
     val forgotPasswordEmailError: String? = null,
+    val isForgotPasswordLinkSent: Boolean = false,
     val loading: Boolean = false,
     val rememberMe: Boolean = false,
     val isSignInSuccess: Boolean = false,

@@ -1,5 +1,6 @@
 package com.example.medease.presentation.features.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,6 +37,7 @@ import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
 import com.example.medease.presentation.features.auth.viewmodels.AuthViewModel
+import com.example.medease.presentation.features.auth.viewmodels.events.AuthEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignInEvent
 import com.example.medease.presentation.features.auth.viewmodels.events.SignInStates
 import com.example.medease.presentation.features.common.AuthHeadings
@@ -48,10 +51,13 @@ fun ForgotPasswordScreen(
 ) {
     val state by viewModel.signInState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
-    LaunchedEffect(key1 = state.isSignInSuccess) {
-        if (state.isSignInSuccess) {
+    LaunchedEffect(key1 = state.isForgotPasswordLinkSent) {
+        if (state.isForgotPasswordLinkSent) {
             viewModel.signInEvent(SignInEvent.ForgotPasswordEmailChanged(""))
+            Toast.makeText(context, "Link sent to your email", Toast.LENGTH_SHORT).show()
+            navController.navigateUp()
         }
     }
 
@@ -75,7 +81,7 @@ fun ForgotPasswordScreen(
             navController.navigateUp()
         },
         onForgotPasswordClick = {
-
+            viewModel.authEvent(AuthEvent.ForgotPasswordRequest(state.forgotPasswordEmail))
         }
     )
 }

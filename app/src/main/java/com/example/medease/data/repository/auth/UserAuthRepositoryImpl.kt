@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -95,6 +96,26 @@ class UserAuthRepositoryImpl @Inject constructor(
             return Either.Left(SignInWithEmailAndPasswordFailure.NetworkError)
         }
     }
+
+    override suspend fun userForgotPassword(email: String): Either<SignInWithEmailAndPasswordFailure, Unit> {
+       try {
+           auth.sendPasswordResetEmail(email).await()
+           return Either.Right(Unit)
+       }catch (e:FirebaseAuthException){
+           val failure = when (e) {
+               is FirebaseAuthInvalidCredentialsException -> {
+                   SignInWithEmailAndPasswordFailure.InvalidCredentials
+               }
+               else -> {
+                   SignInWithEmailAndPasswordFailure.UnknownError(e)
+               }
+           }
+           return Either.Left(failure)
+       }catch (e: FirebaseNetworkException){
+           return Either.Left(SignInWithEmailAndPasswordFailure.NetworkError)
+       }
+    }
+
     private suspend fun saveRememberMe(rememberMe: Boolean) {
         dataStore.edit { preferences ->
             preferences[USER_REMEMBER_ME] = rememberMe

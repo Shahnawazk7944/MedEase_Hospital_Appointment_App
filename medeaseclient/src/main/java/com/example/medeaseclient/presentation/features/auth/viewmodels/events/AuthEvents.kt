@@ -20,6 +20,10 @@ sealed class AuthEvent {
         val password: String,
         val rememberMe: Boolean
     ) : AuthEvent()
+
+    data class ForgotPasswordRequest(
+        val email: String,
+    ) : AuthEvent()
 }
 
 sealed class SignInEvent {
