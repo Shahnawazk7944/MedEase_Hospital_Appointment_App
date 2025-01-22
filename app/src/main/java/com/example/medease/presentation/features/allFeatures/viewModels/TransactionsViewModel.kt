@@ -16,6 +16,7 @@ import javax.inject.Inject
 
 data class TransactionsStates(
     val loading: Boolean = false,
+    val transactionsSortBy: String = "All Transactions",
     val failure: UserAllFeaturesFailure? = null,
     val transactions: List<PaymentDetails> = emptyList()
 )
@@ -23,6 +24,7 @@ data class TransactionsStates(
 sealed class TransactionsEvents {
     data class GetTransactions(val userId: String) : TransactionsEvents()
     data object RemoveFailure : TransactionsEvents()
+    data class SortTransactionsBy(val query: String) : TransactionsEvents()
 }
 
 @HiltViewModel
@@ -40,9 +42,16 @@ class TransactionsViewModel @Inject constructor(
                 fetchMyTransactions(event.userId)
             }
 
-            TransactionsEvents.RemoveFailure -> {_state.update { it.copy(failure = null) }}
+            TransactionsEvents.RemoveFailure -> {
+                _state.update { it.copy(failure = null) }
+            }
+
+            is TransactionsEvents.SortTransactionsBy -> {
+                _state.update { it.copy(transactionsSortBy = event.query) }
+            }
         }
     }
+
     private fun fetchMyTransactions(userId: String) {
         _state.update { it.copy(loading = true) }
         viewModelScope.launch(Dispatchers.IO) {

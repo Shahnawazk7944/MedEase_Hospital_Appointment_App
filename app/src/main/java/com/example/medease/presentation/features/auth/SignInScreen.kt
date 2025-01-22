@@ -46,7 +46,8 @@ import com.example.medease.presentation.features.auth.viewmodels.events.SignInSt
 fun SignInScreen(
     viewModel: AuthViewModel = hiltViewModel(),
     onSignUpClick: () -> Unit,
-    onSuccessFullLogin: () -> Unit
+    onSuccessFullLogin: () -> Unit,
+    onForgotPasswordClick: () -> Unit
 ) {
     val activity = (LocalContext.current as? Activity)
     BackHandler {
@@ -56,18 +57,12 @@ fun SignInScreen(
     }
     val state by viewModel.signInState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    Log.d("----", "state: ${state.isSignInSuccess}")
-
     LaunchedEffect(key1 = state.isSignInSuccess) {
         if (state.isSignInSuccess) {
             viewModel.signInEvent(SignInEvent.ClearAllFields(true))
             onSuccessFullLogin.invoke()
         }
     }
-
-    Log.d("----", "state: ${state.failure}")
-
     LaunchedEffect(key1 = state.failure) {
         if (state.failure != null) {
             val errorMessage =
@@ -98,7 +93,8 @@ fun SignInScreen(
             if (activity?.isTaskRoot == true) {
                 activity.finishAndRemoveTask()
             }
-        }
+        },
+        onForgotPasswordClick = {onForgotPasswordClick.invoke()}
     )
 }
 
@@ -109,7 +105,8 @@ fun SignInContent(
     signInRequest: () -> Unit,
     signInEvent: (SignInEvent) -> Unit,
     onSignUpClick: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -146,7 +143,8 @@ fun SignInContent(
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
             SignInTextFields(
                 state = state,
-                event = signInEvent
+                event = signInEvent,
+                onForgotPasswordClick = {onForgotPasswordClick.invoke()}
             )
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
@@ -182,8 +180,9 @@ fun SignInContentPreview() {
             signInRequest = {},
             signInEvent = {},
             onSignUpClick = {},
-            onBackClick = TODO(),
-            snackbarHostState = TODO()
+            onBackClick = {},
+            snackbarHostState = remember { SnackbarHostState() },
+            onForgotPasswordClick = {}
         )
     }
 }

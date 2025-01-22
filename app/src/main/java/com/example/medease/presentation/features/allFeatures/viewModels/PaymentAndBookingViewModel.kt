@@ -39,6 +39,10 @@ sealed class PaymentAndBookingEvents {
         val transactionId: String
     ) : PaymentAndBookingEvents()
 
+    data class FetchAppointmentDetails(
+        val appointmentId: String,
+    ) : PaymentAndBookingEvents()
+
     data object RemoveFailure : PaymentAndBookingEvents()
 }
 
@@ -67,6 +71,10 @@ class PaymentAndBookingViewModel @Inject constructor(
 
             PaymentAndBookingEvents.RemoveFailure -> {
                 _state.update { it.copy(failure = null) }
+            }
+
+            is PaymentAndBookingEvents.FetchAppointmentDetails -> {
+                fetchAppointmentDetails(event.appointmentId)
             }
         }
     }
@@ -101,6 +109,24 @@ class PaymentAndBookingViewModel @Inject constructor(
                 appointmentId = appointmentId,
                 userId = userId,
                 transactionId = transactionId
+            ).onRight { booking ->
+                _state.update { it.copy(booking = booking, loading = false) }
+            }.onLeft { failure ->
+                _state.update {
+                    it.copy(
+                        loading = false,
+                        failure = failure
+                    )
+                }
+            }
+        }
+    }
+
+    private fun fetchAppointmentDetails(appointmentId: String) {
+        _state.update { it.copy(loading = true) }
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.fetchAppointmentDetails(
+                appointmentId = appointmentId,
             ).onRight { booking ->
                 _state.update { it.copy(booking = booking, loading = false) }
             }.onLeft { failure ->

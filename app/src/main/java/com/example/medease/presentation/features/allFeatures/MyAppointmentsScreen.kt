@@ -1,11 +1,13 @@
 package com.example.medease.presentation.features.allFeatures
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,11 +20,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.AllInbox
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PendingActions
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -30,9 +33,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -51,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -59,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.example.designsystem.components.SecondaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
 import com.example.medease.R
@@ -89,6 +92,7 @@ fun MyAppointmentsScreen(
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(key1 = state.failure) {
         state.failure?.let {
@@ -98,14 +102,25 @@ fun MyAppointmentsScreen(
                 duration = SnackbarDuration.Short,
                 withDismissAction = true
             )
-            viewModel.myAppointmentsEvents(MyAppointmentsEvents.RemoveFailure)
+            viewModel.myAppointmentsEvents(MyAppointmentsEvents.RemoveFailureAndSuccess)
+        }
+    }
+    LaunchedEffect(key1 = state.appointmentStatusSuccess) {
+        state.appointmentStatusSuccess?.let {
+            val successMessage = getSnackbarMessage(state.appointmentStatusSuccess)
+            Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show()
+           viewModel.myAppointmentsEvents(MyAppointmentsEvents.RemoveFailureAndSuccess)
         }
     }
 
     MyAppointmentsContent(
         state = state,
         onBackClick = { navController.navigateUp() },
-        snackbarHostState = snackbarHostState
+        snackbarHostState = snackbarHostState,
+        events = viewModel::myAppointmentsEvents,
+        onAppointmentDetailsClick = {appointmentId ->
+            navController.navigate(Routes.AppointmentDetailsScreen(appointmentId))
+        }
     )
 }
 
@@ -113,9 +128,12 @@ fun MyAppointmentsScreen(
 @Composable
 fun MyAppointmentsContent(
     state: MyAppointmentsStates,
+    events: (MyAppointmentsEvents) -> Unit,
     snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
+    onAppointmentDetailsClick: (appointmentId: String) -> Unit,
 ) {
+    var expanded by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             CustomTopBar(
@@ -128,13 +146,130 @@ fun MyAppointmentsContent(
                     )
                 },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Sort,
-                            contentDescription = "sort icon",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(25.dp)
-                        )
+                    Box {
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Sort,
+                                contentDescription = "sort icon",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(25.dp)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(MaterialTheme.spacing.medium),
+                            offset = DpOffset((-4).dp, 4.dp),
+                            tonalElevation = 2.dp,
+                            shadowElevation = 6.dp
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "All Appointments",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.appointmentsSortBy == "All Appointments") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(MyAppointmentsEvents.SortAppointmentsBy("All Appointments"))
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.AllInbox,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Pending Appointments",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.appointmentsSortBy == "Pending Appointments") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(MyAppointmentsEvents.SortAppointmentsBy("Pending Appointments"))
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.PendingActions,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Confirmed Appointments",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.appointmentsSortBy == "Confirmed Appointments") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(MyAppointmentsEvents.SortAppointmentsBy("Confirmed Appointments"))
+
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Re-Scheduled Appointments",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.appointmentsSortBy == "Re-Scheduled Appointments") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(MyAppointmentsEvents.SortAppointmentsBy("Re-Scheduled Appointments"))
+
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Schedule,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Cancelled Appointments",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.appointmentsSortBy == "Cancelled Appointments") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(MyAppointmentsEvents.SortAppointmentsBy("Cancelled Appointments"))
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Cancel,
+                                        tint = MaterialTheme.colorScheme.errorContainer,
+                                        contentDescription = "cancel icon"
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -163,13 +298,36 @@ fun MyAppointmentsContent(
                 item { LoadingDialog(true) }
             }
             if (state.appointments.isNotEmpty()) {
-                items(state.appointments, key = { it.appointmentId }) { appointment ->
-                    AppointmentCard(
-                        appointment = appointment
-                    ) {
-                        // Navigating or opening another screen on click
-                        // Use the appointment id or any desired information
+                val sortedAppointments = when (state.appointmentsSortBy) {
+                    "All Appointments" -> state.appointments.sortedByDescending { it.bookingDate }
+                    "Pending Appointments" -> state.appointments.filter { it.status == "Pending confirmation" }
+                    "Confirmed Appointments" -> state.appointments.filter { it.status == "Appointment confirmed" }
+                    "Re-Scheduled Appointments" -> state.appointments.filter { it.status == "Appointment rescheduled" }
+                    "Cancelled Appointments" -> state.appointments.filter { it.status == "Appointment cancelled" }
+                    else -> state.appointments.sortedByDescending { it.bookingDate }
+                }
+                if (sortedAppointments.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No Appointments found according to selected sorting",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.secondary,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
                     }
+                }
+                items(sortedAppointments, key = { it.appointmentId }) { appointment ->
+                    AppointmentCard(
+                        appointment = appointment,
+                        onCancelAppointmentClick = {events(MyAppointmentsEvents.ChangeAppointmentStatus(appointment.appointmentId, "Appointment cancelled"))},
+                        onAppointmentDetailsClick = {onAppointmentDetailsClick.invoke(appointment.appointmentId)}
+                    )
                 }
             } else if (!state.loading) {
                 item {
@@ -195,13 +353,14 @@ fun MyAppointmentsContent(
 @Composable
 fun AppointmentCard(
     appointment: AppointmentDetails,
-    onItemClick: () -> Unit
+    onCancelAppointmentClick: () -> Unit,
+    onAppointmentDetailsClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = MaterialTheme.spacing.small)
-            .clickable {},
+            .clickable { onAppointmentDetailsClick.invoke() },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.onBackground,
         ),
@@ -347,6 +506,22 @@ fun AppointmentCard(
                     color = MaterialTheme.colorScheme.secondary
                 )
             }
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            if (appointment.status != "Appointment cancelled") {
+                SecondaryButton(
+                    onClick = {onCancelAppointmentClick.invoke()},
+                    shape = MaterialTheme.shapes.medium,
+                    label = "Cancel Appointment",
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor =  MaterialTheme.colorScheme.errorContainer),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.errorContainer
+                    )
+                )
+            }
         }
     }
 }
@@ -467,7 +642,9 @@ fun MyAppointmentsContentPreview() {
         MyAppointmentsContent(
             state = state,
             snackbarHostState = snackbarHostState,
-            onBackClick = {}
+            onBackClick = {},
+            events = {},
+            onAppointmentDetailsClick = {  }
         )
     }
 }

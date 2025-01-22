@@ -12,10 +12,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.AllInbox
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CalendarViewMonth
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.PendingActions
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,26 +40,33 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
 import com.example.medease.domain.model.PaymentDetails
+import com.example.medease.presentation.features.allFeatures.viewModels.MyAppointmentsEvents
 import com.example.medease.presentation.features.allFeatures.viewModels.TransactionsEvents
 import com.example.medease.presentation.features.allFeatures.viewModels.TransactionsStates
 import com.example.medease.presentation.features.allFeatures.viewModels.TransactionsViewModel
 import com.example.medease.presentation.features.common.CustomTopBar
 import com.example.medease.presentation.features.common.LoadingDialog
 import com.example.medease.presentation.features.common.getSnackbarMessage
+import java.util.Locale
 
 @Composable
 fun TransactionsScreen(
@@ -83,17 +101,45 @@ fun TransactionsScreen(
                     userId = userId
                 )
             )
-        }
+        },
+        events = viewModel::transactionsEvents
     )
 }
+fun isCurrentMonth(dateString: String): Boolean {
+    val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateString)
+    val calendar = Calendar.getInstance().apply {
+        if (date != null) {
+            time = date
+        }
+    }
+    val month = calendar.get(Calendar.MONTH)
+    val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
+    return month == currentMonth
 
+}
+
+fun isWithinLast3Months(dateString: String): Boolean {
+     val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateString)
+    val targetCalendar = Calendar.getInstance()
+    if (date != null) {
+        targetCalendar.time = date
+    }
+
+    val threeMonthsAgo = Calendar.getInstance()
+    threeMonthsAgo.add(Calendar.MONTH, -3)
+
+    return !targetCalendar.before(threeMonthsAgo)
+
+}
 @Composable
 fun TransactionsContent(
     state: TransactionsStates,
+    events: (TransactionsEvents) -> Unit,
     snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onTransactionClick: (appointmentId: String, transactionId: String, userId: String) -> Unit,
 ) {
+    var expanded by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             CustomTopBar(
@@ -106,15 +152,112 @@ fun TransactionsContent(
                     )
                 },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Sort,
-                            contentDescription = "sort icon",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(25.dp)
-                        )
+                    Box {
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Sort,
+                                contentDescription = "sort icon",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(25.dp)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(MaterialTheme.spacing.medium),
+                            offset = DpOffset((-4).dp, 4.dp),
+                            tonalElevation = 2.dp,
+                            shadowElevation = 6.dp
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "All Transactions",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.transactionsSortBy == "All Transactions") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(TransactionsEvents.SortTransactionsBy("All Transactions"))
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Done,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "All"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "This Month Transactions",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.transactionsSortBy == "This Month Transactions") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(TransactionsEvents.SortTransactionsBy("This Month Transactions"))
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.CalendarMonth,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Last 3 Month Transactions",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.transactionsSortBy == "Last 3 Month Transactions") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(TransactionsEvents.SortTransactionsBy("Last 3 Month Transactions"))
+
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.CalendarViewMonth,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "reschedule"
+                                    )
+                                }
+                            )
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Failed Transactions",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.transactionsSortBy == "Failed Transactions") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    events(TransactionsEvents.SortTransactionsBy("Failed Transactions"))
+
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Cancel,
+                                        tint = MaterialTheme.colorScheme.errorContainer,
+                                        contentDescription = "cancel icon"
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
+
             )
         },
         snackbarHost = {
@@ -140,8 +283,35 @@ fun TransactionsContent(
             if (state.loading) {
                 item { LoadingDialog(true) }
             }
+            val sortedTransactions = when (state.transactionsSortBy) {
+                "All Transactions" -> state.transactions.sortedByDescending { it.date }
+                "This Month Transactions" -> state.transactions.sortedByDescending { it.date }.filter { isCurrentMonth(it.date) }
+                "Last 3 Month Transactions" -> state.transactions.sortedByDescending { it.date }.filter { isWithinLast3Months(it.date) }
+
+                "Failed Transactions" -> state.transactions.sortedByDescending { it.date }.filter { it.status == "Failed" }
+
+                else -> state.transactions.sortedByDescending { it.date }
+
+            }
+
             if (state.transactions.isNotEmpty()) {
-                items(state.transactions, key = { it.transactionId }) { transaction ->
+                if(sortedTransactions.isEmpty()){
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No Transactions found according to selected sorting",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.secondary,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+                }
+                items(sortedTransactions, key = { it.transactionId }) { transaction ->
                     TransactionCard(
                         transaction = transaction,
                         onTransactionClick = onTransactionClick
@@ -335,7 +505,8 @@ fun TransactionsContentPreview() {
             state = state,
             snackbarHostState = snackbarHostState,
             onBackClick = {},
-            onTransactionClick = { _, _, _ -> }
+            onTransactionClick = { _, _, _ -> },
+            events = {}
         )
     }
 }

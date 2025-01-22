@@ -15,6 +15,7 @@ import com.example.medeaseclient.domain.model.ClientProfile
 import com.example.medeaseclient.domain.model.Doctor
 import com.example.medeaseclient.presentation.features.allFeatures.HospitalProfileScreen
 import com.example.medeaseclient.presentation.features.allFeatures.MyAppointmentsScreen
+import com.example.medeaseclient.presentation.features.auth.ForgotPasswordScreen
 import com.example.medeaseclient.presentation.features.auth.SignInScreen
 import com.example.medeaseclient.presentation.features.auth.SignUpScreen
 import com.example.medeaseclient.presentation.features.doctorsAndBeds.AddDoctorsScreen
@@ -52,7 +53,13 @@ fun MedEaseClientNavGraph(
         composable<ClientRoutes.SignInScreen> {
             SignInScreen(
                 onSignUpClick = { navController.navigate(ClientRoutes.SignUpScreen) },
-                onSuccessFullLogin = { navController.navigate(ClientRoutes.HomeScreen) }
+                onSuccessFullLogin = { navController.navigate(ClientRoutes.HomeScreen) },
+                onForgotPasswordClick = {navController.navigate(ClientRoutes.ForgotPasswordScreen)}
+            )
+        }
+        composable<ClientRoutes.ForgotPasswordScreen> {
+            ForgotPasswordScreen(
+                navController = navController
             )
         }
         composable<ClientRoutes.HomeScreen> {

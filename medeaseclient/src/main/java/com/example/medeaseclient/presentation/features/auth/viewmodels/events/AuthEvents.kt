@@ -24,6 +24,7 @@ sealed class AuthEvent {
 
 sealed class SignInEvent {
     data class EmailChanged(val newValue: String) : SignInEvent()
+    data class ForgotPasswordEmailChanged(val newValue: String) : SignInEvent()
     data class PasswordChanged(val newValue: String) : SignInEvent()
     data class RememberMeChanged(val newValue: Boolean) : SignInEvent()
     data class RemoveFailure(val newValue: SignInWithEmailAndPasswordFailure? = null) :

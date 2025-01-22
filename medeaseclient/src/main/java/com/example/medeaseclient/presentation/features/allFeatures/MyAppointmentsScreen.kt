@@ -1,6 +1,5 @@
 package com.example.medeaseclient.presentation.features.allFeatures
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.AllInbox
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.PendingActions
@@ -144,7 +144,7 @@ fun MyAppointmentsContent(
                 },
                 actions = {
                     Box {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { expanded = true }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Sort,
                                 contentDescription = "sort icon",
@@ -167,6 +167,7 @@ fun MyAppointmentsContent(
                                     Text(
                                         text = "All Appointments",
                                         style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.appointmentsSortBy == "All Appointments") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                                     )
                                 },
                                 onClick = {
@@ -175,7 +176,7 @@ fun MyAppointmentsContent(
                                 },
                                 leadingIcon = {
                                     Icon(
-                                        imageVector = Icons.Default.PendingActions,
+                                        imageVector = Icons.Default.AllInbox,
                                         tint = MaterialTheme.colorScheme.primary,
                                         contentDescription = "reschedule"
                                     )
@@ -186,6 +187,7 @@ fun MyAppointmentsContent(
                                     Text(
                                         text = "Pending Appointments",
                                         style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.appointmentsSortBy == "Pending Appointments") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                                     )
                                 },
                                 onClick = {
@@ -205,6 +207,7 @@ fun MyAppointmentsContent(
                                     Text(
                                         text = "Confirmed Appointments",
                                         style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.appointmentsSortBy == "Confirmed Appointments") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                                     )
                                 },
                                 onClick = {
@@ -227,6 +230,7 @@ fun MyAppointmentsContent(
                                     Text(
                                         text = "Re-Scheduled Appointments",
                                         style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.appointmentsSortBy == "Re-Scheduled Appointments") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                                     )
                                 },
                                 onClick = {
@@ -247,6 +251,7 @@ fun MyAppointmentsContent(
                                     Text(
                                         text = "Cancelled Appointments",
                                         style = MaterialTheme.typography.titleMedium,
+                                        color = if (state.appointmentsSortBy == "Cancelled Appointments") MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                                     )
                                 },
                                 onClick = {
@@ -295,13 +300,29 @@ fun MyAppointmentsContent(
                 item { LoadingDialog(true) }
             }
             if (state.appointments.isNotEmpty()) {
-                val sortedAppointments = when(state.appointmentsSortBy){
-                    "All Appointments"-> state.appointments
-                    "Pending Appointments" -> state.appointments.filter { it.status == "Pending" }
+                val sortedAppointments = when (state.appointmentsSortBy) {
+                    "All Appointments" -> state.appointments.sortedByDescending { it.bookingDate }
+                    "Pending Appointments" -> state.appointments.filter { it.status == "Pending confirmation" }
                     "Confirmed Appointments" -> state.appointments.filter { it.status == "Appointment confirmed" }
                     "Re-Scheduled Appointments" -> state.appointments.filter { it.status == "Appointment rescheduled" }
                     "Cancelled Appointments" -> state.appointments.filter { it.status == "Appointment cancelled" }
-                    else -> state.appointments
+                    else -> state.appointments.sortedByDescending { it.bookingDate }
+                }
+                if (sortedAppointments.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No Appointments found according to selected sorting",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.secondary,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
                 }
                 items(sortedAppointments, key = { it.appointmentId }) { appointment ->
                     AppointmentCard(

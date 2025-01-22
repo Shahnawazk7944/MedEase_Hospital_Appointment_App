@@ -9,6 +9,8 @@ const val DOCTORS_COLLECTION = "doctors"
 const val BEDS_COLLECTION = "beds"
 const val APPOINTMENTS_COLLECTION = "appointments"
 const val TRANSACTIONS_COLLECTION = "transactions"
+const val USER_HEALTH_RECORDS_COLLECTION = "healthRecords"
+
 
 
 object PreferencesKeys {

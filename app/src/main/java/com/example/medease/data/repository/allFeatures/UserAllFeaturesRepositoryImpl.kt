@@ -1,5 +1,6 @@
 package com.example.medease.data.repository.allFeatures
 
+import android.util.Log.e
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
@@ -7,8 +8,10 @@ import com.example.medease.data.firebase.FirebaseWrapper
 import com.example.medease.data.util.APPOINTMENTS_COLLECTION
 import com.example.medease.data.util.TRANSACTIONS_COLLECTION
 import com.example.medease.data.util.USERS_COLLECTION
+import com.example.medease.data.util.USER_HEALTH_RECORDS_COLLECTION
 import com.example.medease.domain.model.AppointmentDetails
 import com.example.medease.domain.model.Booking
+import com.example.medease.domain.model.HealthRecord
 import com.example.medease.domain.model.PaymentDetails
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -72,6 +75,26 @@ class UserAllFeaturesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun fetchAppointmentDetails(
+        appointmentId: String,
+    ): Either<UserAllFeaturesFailure, Booking> {
+        return try {
+            val appointmentDeferred =
+                appointmentDatabase.document(appointmentId).get()
+
+            val appointmentDetails =
+                appointmentDeferred.await().toObject(AppointmentDetails::class.java)
+
+            if (appointmentDetails != null) {
+                Booking(appointmentDetails).right()
+            } else {
+                UserAllFeaturesFailure.BookingNotFound.left()
+            }
+        } catch (e: Exception) {
+            UserAllFeaturesFailure.DatabaseError(e).left()
+        }
+    }
+
     override suspend fun fetchMyAppointments(userId: String): Either<UserAllFeaturesFailure, List<AppointmentDetails>> {
         return try {
             val appointments = appointmentDatabase
@@ -92,6 +115,30 @@ class UserAllFeaturesRepositoryImpl @Inject constructor(
                 .await()
                 .toObjects(PaymentDetails::class.java)
             transactions.right()
+        } catch (e: Exception) {
+            UserAllFeaturesFailure.DatabaseError(e).left()
+        }
+    }
+
+    override suspend fun fetchMyHealthRecords(userId: String): Either<UserAllFeaturesFailure, List<HealthRecord>> {
+        return try {
+            val healthRecords = userDatabase.document(userId).collection(USER_HEALTH_RECORDS_COLLECTION)
+                .get()
+                .await()
+                .toObjects(HealthRecord::class.java)
+            healthRecords.right()
+        } catch (e: Exception) {
+            UserAllFeaturesFailure.DatabaseError(e).left()
+        }
+    }
+
+    override suspend fun cancelAppointment(
+        appointmentId: String,
+        newStatus: String
+    ): Either<UserAllFeaturesFailure, UserAllFeaturesSuccess> {
+        return try {
+            appointmentDatabase.document(appointmentId).update(mapOf("status" to newStatus)).await()
+            UserAllFeaturesSuccess.AppointmentCancelled.right()
         } catch (e: Exception) {
             UserAllFeaturesFailure.DatabaseError(e).left()
         }
