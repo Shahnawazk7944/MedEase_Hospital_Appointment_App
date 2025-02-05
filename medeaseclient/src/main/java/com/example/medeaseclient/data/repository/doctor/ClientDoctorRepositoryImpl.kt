@@ -1,6 +1,5 @@
 package com.example.medeaseclient.data.repository.doctor
 
-import android.util.Log
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
@@ -10,15 +9,17 @@ import com.example.medeaseclient.data.util.DOCTORS_COLLECTION
 import com.example.medeaseclient.data.util.HOSPITALS_COLLECTION
 import com.example.medeaseclient.domain.model.Bed
 import com.example.medeaseclient.domain.model.Doctor
+import com.example.medeaseclient.domain.model.Slot
 import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
-import kotlin.jvm.java
 
 class ClientDoctorRepositoryImpl @Inject constructor(
     private val firebaseWrapper: FirebaseWrapper,
@@ -31,7 +32,14 @@ class ClientDoctorRepositoryImpl @Inject constructor(
     override suspend fun addDoctor(doctor: Doctor): Either<DoctorsFailure, DoctorsSuccess> {
         return try {
             val documentReference = database.document()
-            documentReference.set(doctor.copy(doctorId = documentReference.id)).await()
+            val availabilitySlots =
+                generateAvailabilitySlots(doctor.availabilityFrom, doctor.availabilityTo)
+            val doctorWithSlots = doctor.copy(
+                doctorId = documentReference.id,
+                availabilitySlots = availabilitySlots
+            )
+
+            documentReference.set(doctorWithSlots).await()
             DoctorsSuccess.DoctorAdded.right()
         } catch (e: Exception) {
             DoctorsFailure.DatabaseError(e).left()
@@ -40,11 +48,90 @@ class ClientDoctorRepositoryImpl @Inject constructor(
 
     override suspend fun updateDoctor(doctor: Doctor): Either<DoctorsFailure, DoctorsSuccess> {
         return try {
-            database.document(doctor.doctorId).set(doctor).await()
+            val documentRef = database.document(doctor.doctorId)
+            val snapshot = documentRef.get().await()
+
+            if (!snapshot.exists()) {
+                return DoctorsFailure.DatabaseError(Exception("Doctor not found")).left()
+            }
+
+            val existingDoctor =
+                snapshot.toObject(Doctor::class.java) ?: return DoctorsFailure.DatabaseError(
+                    Exception("Invalid data")
+                ).left()
+
+            // Get existing availability slots
+            val existingSlots = existingDoctor.availabilitySlots.toMutableMap()
+
+            // Generate the new date range from availabilityFrom to availabilityTo
+            val newDateRange = generateDateRange(doctor.availabilityFrom, doctor.availabilityTo)
+
+            // Create a new map with only relevant dates
+            val updatedSlots = mutableMapOf<String, List<Slot>>()
+
+            for (date in newDateRange) {
+                if (existingSlots.containsKey(date)) {
+                    // If the date already exists, keep the existing slots
+                    updatedSlots[date] = existingSlots[date]!!
+                } else {
+                    // If the date is new, create empty slots
+                    updatedSlots[date] = generateTimeSlots()
+                }
+            }
+
+            // Update Firestore with the final slots
+            val updatedDoctor = doctor.copy(availabilitySlots = updatedSlots)
+            documentRef.set(updatedDoctor).await()
+
             DoctorsSuccess.DoctorUpdated.right()
         } catch (e: Exception) {
             DoctorsFailure.DatabaseError(e).left()
         }
+    }
+
+    private fun generateAvailabilitySlots(fromDate: String, toDate: String): Map<String, List<Slot>> {
+        val format = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+        val startCal = Calendar.getInstance().apply { time = format.parse(fromDate)!! }
+        val endCal = Calendar.getInstance().apply { time = format.parse(toDate)!! }
+
+        val availabilityMap = mutableMapOf<String, List<Slot>>()
+
+        while (!startCal.after(endCal)) {
+            val date = format.format(startCal.time)
+            availabilityMap[date] = generateTimeSlots()
+            startCal.add(Calendar.DATE, 1)
+        }
+
+        return availabilityMap
+    }
+
+    private fun generateTimeSlots(): List<Slot> {
+        val slots = mutableListOf<Slot>()
+        val format = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        val cal =
+            Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0) }
+        for (i in 0 until 48) {
+            val startTime = format.format(cal.time)
+            cal.add(Calendar.MINUTE, 30)
+            val endTime = format.format(cal.time)
+
+            slots.add(Slot(time = "$startTime - $endTime", available = true))
+        }
+        return slots
+    }
+
+    private fun generateDateRange(fromDate: String, toDate: String): List<String> {
+        val format = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+        val startCal = Calendar.getInstance().apply { time = format.parse(fromDate)!! }
+        val endCal = Calendar.getInstance().apply { time = format.parse(toDate)!! }
+
+        val dateList = mutableListOf<String>()
+        while (!startCal.after(endCal)) {
+            dateList.add(format.format(startCal.time))
+            startCal.add(Calendar.DATE, 1)
+        }
+        return dateList
     }
 
     override suspend fun deleteDoctor(doctorId: String): Either<DoctorsFailure, DoctorsSuccess> {
@@ -57,24 +144,26 @@ class ClientDoctorRepositoryImpl @Inject constructor(
     }
 
     override suspend fun fetchDoctors(): Flow<Either<DoctorsFailure, List<Doctor>>> {
-
         // TEMPORARY CODE TO UPDATE DOCTORS WITH NEW FIELDS
-        /*try {
-            val doctorsSnapshot: QuerySnapshot = database.get().await()
-            for (document in doctorsSnapshot.documents) {
-                val doctor = document.toObject(Doctor::class.java)
-                if (doctor != null) {
-                    val updatedDoctor = doctor.copy(
-                        generalFees = "0",
-                        careFees = "0",
-                        emergencyFees = "0"
-                    )
-                    database.document(document.id).set(updatedDoctor).await()
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("DoctorRepository", "Error updating doctors: ${e.message}")
-        }*/
+        /* try {
+             val doctorsSnapshot: QuerySnapshot = database.get().await()
+             for (document in doctorsSnapshot.documents) {
+                 val doctor = document.toObject(Doctor::class.java)
+                 if (doctor != null) {
+                     val updatedDoctor = doctor.copy(
+                         availabilityFrom = "05-02-2025",
+                         availabilityTo = "06-02-2025",
+                         availabilitySlots = mapOf(
+                             "05-02-2025" to slotsForDay,
+                             "06-02-2025" to slotsForDay
+                         )
+                     )
+                     database.document(document.id).set(updatedDoctor).await()
+                 }
+             }
+         } catch (e: Exception) {
+             Log.e("DoctorRepository", "Error updating doctors: ${e.message}")
+         }*/
         return callbackFlow {
             val listenerRegistration = database.addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -168,7 +257,10 @@ class ClientDoctorRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun addBedToHospital(hospitalId: String, bed: Bed): Either<DoctorsFailure, DoctorsSuccess> {
+    override suspend fun addBedToHospital(
+        hospitalId: String,
+        bed: Bed
+    ): Either<DoctorsFailure, DoctorsSuccess> {
         return try {
             val bedsCollection = hospitalDatabase.document(hospitalId).collection(BEDS_COLLECTION)
             bedsCollection.document(bed.bedId).set(bed).await()
@@ -178,7 +270,10 @@ class ClientDoctorRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateBedInHospital(hospitalId: String, bed: Bed): Either<DoctorsFailure, DoctorsSuccess> {
+    override suspend fun updateBedInHospital(
+        hospitalId: String,
+        bed: Bed
+    ): Either<DoctorsFailure, DoctorsSuccess> {
         return try {
             val bedsCollection = hospitalDatabase.document(hospitalId).collection(BEDS_COLLECTION)
             bedsCollection.document(bed.bedId).set(bed).await()
@@ -188,7 +283,10 @@ class ClientDoctorRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun deleteBedFromHospital(hospitalId: String, bedId: String): Either<DoctorsFailure, DoctorsSuccess> {
+    override suspend fun deleteBedFromHospital(
+        hospitalId: String,
+        bedId: String
+    ): Either<DoctorsFailure, DoctorsSuccess> {
         return try {
             val bedsCollection = hospitalDatabase.document(hospitalId).collection(BEDS_COLLECTION)
             bedsCollection.document(bedId).delete().await()

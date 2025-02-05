@@ -251,7 +251,7 @@ class DoctorsViewModel @Inject constructor(
 
     private fun addDoctor(doctor: Doctor) {
         _state.update { it.copy(loading = true) }
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.Default) {
             clientDoctorRepository.addDoctor(doctor).onRight { doctorAdded ->
                 delay(1000)
                 _state.update { it.copy(loading = false, doctorsSuccess = doctorAdded) }
@@ -269,7 +269,7 @@ class DoctorsViewModel @Inject constructor(
 
     private fun updateDoctor(doctor: Doctor) {
         _state.update { it.copy(loading = true) }
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.Default) {
             clientDoctorRepository.updateDoctor(doctor).onRight { doctorUpdated ->
                 delay(1000)
                 _state.update { it.copy(loading = false, doctorsSuccess = doctorUpdated) }

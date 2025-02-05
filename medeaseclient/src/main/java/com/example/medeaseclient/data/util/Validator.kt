@@ -1,7 +1,7 @@
 package com.example.medeaseclient.data.util
 
-import android.R.attr.name
 import android.util.Patterns
+import java.util.Calendar
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -237,6 +237,14 @@ class Validator {
                 if (toDateObj.before(fromDateObj)) {
                     return ValidationError("To Date cannot be before From Date.")
                 }
+                val calendar = Calendar.getInstance()
+                if (fromDateObj != null) {
+                    calendar.time = fromDateObj
+                }
+                calendar.add(Calendar.DAY_OF_YEAR, 7)
+                if (toDateObj.after(calendar.time)) {
+                    return ValidationError("To Date cannot be more than 7 days from From Date.")
+                }
             }
         }
         return null
@@ -321,7 +329,11 @@ class Validator {
         return null
     }
 
-    fun validateBookingDate(bookingDate: String, fromDate: String, toDate: String): ValidationError? {
+    fun validateBookingDate(
+        bookingDate: String,
+        fromDate: String,
+        toDate: String
+    ): ValidationError? {
         if (bookingDate.isBlank()) {
             return ValidationError("Booking Date cannot be empty")
         }
