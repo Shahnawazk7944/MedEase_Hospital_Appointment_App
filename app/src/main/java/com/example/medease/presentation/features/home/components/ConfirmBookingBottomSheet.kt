@@ -1,6 +1,9 @@
 package com.example.medease.presentation.features.home.components
 
+import android.R.attr.onClick
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +28,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,24 +36,27 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.designsystem.components.OutlinedDateInputField
-import com.example.designsystem.components.OutlinedTimeInputField
+import com.example.designsystem.components.OutlinedInputField
 import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.spacing
 import com.example.medease.domain.model.AppointmentDetails
 import com.example.medease.domain.model.Bed
 import com.example.medease.domain.model.Doctor
 import com.example.medease.domain.model.HospitalWithDoctors
+import com.example.medease.domain.model.Slot
 import com.example.medease.presentation.features.home.viewmodels.HomeEvents
 import com.example.medease.presentation.features.home.viewmodels.HomeStates
 import com.example.medease.presentation.features.home.viewmodels.isConfirmBookingFormValid
 import java.text.NumberFormat
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 
 @Composable
 fun BookingConformationBottomSheet(
@@ -222,47 +229,42 @@ fun BookingConformationBottomSheet(
                 }
                 item(key = "doctor_details_5") {
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        OutlinedDateInputField(
-                            date = state.bookingDate,
-                            onDateChange = {
-                                events(
-                                    HomeEvents.BookingDateChange(
-                                        newDate = it,
-                                        fromDate = doctor.availabilityFrom,
-                                        toDate = doctor.availabilityTo
-                                    )
+
+                    OutlinedDateInputField(
+                        date = state.bookingDate,
+                        onDateChange = {
+                            events(
+                                HomeEvents.BookingDateChange(
+                                    newDate = it,
+                                    fromDate = doctor.availabilityFrom,
+                                    toDate = doctor.availabilityTo
                                 )
-                            },
-                            label = "Date",
-                            placeholder = {
-                                Text(
-                                    text = "20-01-2024",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                            },
-                            modifier = Modifier.weight(1f),
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.CalendarMonth,
-                                    contentDescription = "Calendar icon",
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            },
-                            error = state.bookingDateError,
-                        )
-                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
-                        OutlinedTimeInputField(
-                            time = state.bookingTime,
-                            onTimeChange = {
-                                events(HomeEvents.BookingTimeChange(it))
-                            },
+                            )
+                        },
+                        label = "Date",
+                        placeholder = {
+                            Text(
+                                text = "20-01-2024",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        },
+                        modifier = Modifier,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.CalendarMonth,
+                                contentDescription = "Calendar icon",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        error = state.bookingDateError,
+                    )
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+                    if (state.bookingDate.isNotEmpty() && state.bookingDateError == null) {
+                        OutlinedInputField(
+                            value = state.bookingTime,
+                            onChange = {},
+                            readOnly = true,
                             label = "Time",
                             placeholder = {
                                 Text(
@@ -270,7 +272,7 @@ fun BookingConformationBottomSheet(
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
                             },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.AccessTime,
@@ -280,9 +282,16 @@ fun BookingConformationBottomSheet(
                             },
                             error = state.bookingTimeError,
                         )
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+                        AvailableSlotsSection(
+                            doctor = doctor,
+                            selectedDate = state.bookingDate,
+                            onSlotSelected = { selectedSlot ->
+                                events(HomeEvents.BookingTimeChange(selectedSlot.time))
+                            }
+                        )
                     }
                 }
-
                 // Booking Quota Selection
                 item(key = "booking_quota_selection") {
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
@@ -299,6 +308,7 @@ fun BookingConformationBottomSheet(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         RadioButton(
+                            enabled = doctor.generalAvailability.toInt() > 0,
                             selected = state.selectedQuota == "general",
                             onClick = { events(HomeEvents.BookingQuotaChange("general")) },
                             colors = RadioButtonDefaults.colors(
@@ -307,6 +317,7 @@ fun BookingConformationBottomSheet(
                         )
                         Text("General")
                         RadioButton(
+                            enabled = doctor.careAvailability.toInt() > 0,
                             selected = state.selectedQuota == "care",
                             onClick = { events(HomeEvents.BookingQuotaChange("care")) },
                             colors = RadioButtonDefaults.colors(
@@ -315,6 +326,7 @@ fun BookingConformationBottomSheet(
                         )
                         Text("Care")
                         RadioButton(
+                            enabled = doctor.emergencyAvailability.toInt() > 0,
                             selected = state.selectedQuota == "emergency",
                             onClick = { events(HomeEvents.BookingQuotaChange("emergency")) },
                             colors = RadioButtonDefaults.colors(
@@ -403,7 +415,8 @@ fun BookingConformationBottomSheet(
                     val totalPrice = doctorFees + bedPrice
 
                     // Format total price with rupee symbol
-                    val formattedTotalPrice = NumberFormat.getCurrencyInstance(Locale("en", "IN")).format(totalPrice)
+                    val formattedTotalPrice =
+                        NumberFormat.getCurrencyInstance(Locale("en", "IN")).format(totalPrice)
 
 
                     PrimaryButton(
@@ -436,6 +449,74 @@ fun BookingConformationBottomSheet(
         }
     }
 }
+
+@Composable
+fun AvailableSlotsSection(
+    doctor: Doctor,
+    selectedDate: String,
+    onSlotSelected: (Slot) -> Unit
+) {
+    val availableSlots = remember(selectedDate) {
+        doctor.availabilitySlots[selectedDate] ?: emptyList<Slot>()
+    }
+
+    Column {
+        if (availableSlots.isEmpty()) {
+            Text(
+                text = "No slots available for the selected day",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(16.dp)
+            )
+        } else {
+            val rows = availableSlots.chunked(16)
+
+            rows.forEach { rowSlots ->
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(rowSlots) { slot ->
+                        SlotItem(
+                            slot = slot,
+                            onClick = { onSlotSelected(slot) }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun SlotItem(slot: Slot, onClick: () -> Unit) {
+    val isDisabled = !slot.available
+
+    Box(
+        modifier = Modifier
+            .width(100.dp)
+            .height(40.dp)
+            .background(
+                if (isDisabled) Color.Gray else MaterialTheme.colorScheme.onBackground,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .border(
+                width = 1.dp,
+                color = if (isDisabled) Color.Gray else MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .clickable(enabled = !isDisabled) { onClick() }
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = slot.time,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (isDisabled) Color.White else MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
 
 @Composable
 fun BedCard(
