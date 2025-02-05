@@ -22,6 +22,12 @@ data class HospitalWithDoctors(
 )
 
 @Serializable
+data class Slot(
+    val time: String = "",
+    val available: Boolean = true
+)
+
+@Serializable
 data class Doctor(
     val doctorId: String = "",
     val hospitalId: String = "",
@@ -30,10 +36,11 @@ data class Doctor(
     val experience: String = "",
     val availabilityFrom: String = "",
     val availabilityTo: String = "",
-    val generalAvailability: String = "",
-    val careAvailability: String = "",
+    val availabilitySlots: Map<String, List<Slot>> = emptyMap(),
     val emergencyAvailability: String = "",
     val treatedSymptoms: String = "",
+    val generalAvailability: String = "",
+    val careAvailability: String = "",
     val generalFees: String = "",
     val careFees: String = "",
     val emergencyFees: String = "",
