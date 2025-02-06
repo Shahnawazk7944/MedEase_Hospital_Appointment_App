@@ -6,9 +6,11 @@ import arrow.core.left
 import arrow.core.right
 import com.example.medeaseclient.data.firebase.FirebaseWrapper
 import com.example.medeaseclient.data.util.APPOINTMENTS_COLLECTION
+import com.example.medeaseclient.data.util.DOCTORS_COLLECTION
 import com.example.medeaseclient.data.util.USERS_COLLECTION
 import com.example.medeaseclient.data.util.USER_HEALTH_RECORDS_COLLECTION
 import com.example.medeaseclient.domain.model.AppointmentDetails
+import com.example.medeaseclient.domain.model.Doctor
 import com.example.medeaseclient.domain.model.HealthRecord
 import com.google.firebase.firestore.DocumentChange
 import kotlinx.coroutines.channels.awaitClose
@@ -24,6 +26,7 @@ class ClientAllFeaturesRepositoryImpl @Inject constructor(
     private val firestore = firebaseWrapper.firestore
     private val appointmentDatabase = firestore.collection(APPOINTMENTS_COLLECTION)
     private val usersDatabase = firestore.collection(USERS_COLLECTION)
+    private val doctorDatabase = firestore.collection(DOCTORS_COLLECTION)
 
     override suspend fun fetchHospitalAppointments(hospitalId: String): Flow<Either<ClientAllFeaturesFailure, List<AppointmentDetails>>> {
         return callbackFlow {
@@ -71,14 +74,25 @@ class ClientAllFeaturesRepositoryImpl @Inject constructor(
         appointmentId: String,
         newStatus: String
     ): Either<ClientAllFeaturesFailure, ClientAllFeaturesSuccess> {
-        return try {
-            appointmentDatabase.document(appointmentId).update(mapOf("status" to newStatus)).await()
-            if (newStatus == "Appointment confirmed") {
-                ClientAllFeaturesSuccess.AppointmentConfirmed.right()
-            } else {
-                ClientAllFeaturesSuccess.AppointmentCancelled.right()
+            return try {
+                appointmentDatabase.document(appointmentId).update(mapOf("status" to newStatus)).await()
+                if (newStatus == "Appointment confirmed") {
+                    ClientAllFeaturesSuccess.AppointmentConfirmed.right()
+                } else {
+                    ClientAllFeaturesSuccess.AppointmentCancelled.right()
+                }
+            } catch (e: Exception) {
+                ClientAllFeaturesFailure.DatabaseError(e).left()
             }
-        } catch (e: Exception) {
+        }
+
+    override suspend fun fetchReScheduleAppointmentDoctor(doctorId: String): Either<ClientAllFeaturesFailure, Doctor> {
+        return try {
+            val doctorDocument = doctorDatabase.document(doctorId).get().await()
+            val doctor = doctorDocument.toObject(Doctor::class.java)?.copy(doctorId = doctorDocument.id)
+            doctor?.right() ?: ClientAllFeaturesFailure.DatabaseError(Exception("Doctor not found")).left()
+        }
+        catch (e : Exception){
             ClientAllFeaturesFailure.DatabaseError(e).left()
         }
     }
@@ -87,7 +101,8 @@ class ClientAllFeaturesRepositoryImpl @Inject constructor(
         appointmentId: String,
         newDate: String,
         newTime: String,
-        newStatus: String
+        newStatus: String,
+        newDoctor: Doctor
     ): Either<ClientAllFeaturesFailure, ClientAllFeaturesSuccess> {
         return try {
             appointmentDatabase.document(appointmentId).update(
@@ -97,6 +112,7 @@ class ClientAllFeaturesRepositoryImpl @Inject constructor(
                     "bookingTime" to newTime
                 )
             ).await()
+            doctorDatabase.document(newDoctor.doctorId).set(newDoctor).await()
             ClientAllFeaturesSuccess.AppointmentReScheduled.right()
         } catch (e: Exception) {
             ClientAllFeaturesFailure.DatabaseError(e).left()

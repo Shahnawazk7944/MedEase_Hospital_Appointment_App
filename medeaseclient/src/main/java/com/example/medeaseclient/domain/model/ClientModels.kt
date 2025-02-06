@@ -38,7 +38,7 @@ data class Doctor(
     val experience: String = "",
     val availabilityFrom: String = "",
     val availabilityTo: String = "",
-    val availabilitySlots: Map<String, List<Slot>> = emptyMap(),
+    var availabilitySlots: Map<String, List<Slot>> = emptyMap(),
     val emergencyAvailability: String = "",
     val treatedSymptoms: String = "",
     val generalAvailability: String = "",

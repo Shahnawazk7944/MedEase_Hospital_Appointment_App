@@ -2,6 +2,7 @@ package com.example.medeaseclient.presentation.features.home.viewmodels.events
 
 import com.example.medeaseclient.data.repository.home.LogoutFailure
 import com.example.medeaseclient.domain.model.AppointmentDetails
+import com.example.medeaseclient.domain.model.Doctor
 
 sealed class HomeEvents {
     object OnLogoutClick : HomeEvents()
@@ -28,6 +29,8 @@ sealed class AppointmentBottomSheetContent {
 sealed class AppointmentOperationEvents {
     data class ChangeAppointmentStatus(val appointmentId: String, val newStatus: String) :
         AppointmentOperationEvents()
+    data class FetchReScheduleAppointmentDoctor(val doctorId: String) :
+        AppointmentOperationEvents()
 
     object ClearAppointmentStatus : AppointmentOperationEvents()
     data class ChangeAddHealthRemark(val newRemark: String) : AppointmentOperationEvents()
@@ -49,7 +52,8 @@ sealed class AppointmentOperationEvents {
         val appointmentId: String,
         val newDate: String,
         val newTime: String,
-        val newStatus: String
+        val newStatus: String,
+        val newDoctor: Doctor
     ) : AppointmentOperationEvents()
 
     object ClearCompletedAppointment : AppointmentOperationEvents()

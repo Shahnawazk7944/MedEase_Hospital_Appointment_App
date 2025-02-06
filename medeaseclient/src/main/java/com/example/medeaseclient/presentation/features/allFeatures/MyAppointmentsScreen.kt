@@ -286,7 +286,6 @@ fun MyAppointmentsContent(
             }
         },
     ) { paddingValues ->
-        val scope = rememberCoroutineScope()
         val sheetState = rememberModalBottomSheetState()
         var bottomSheetContent by remember { mutableStateOf<AppointmentBottomSheetContent?>(null) }
         LazyColumn(
@@ -344,6 +343,7 @@ fun MyAppointmentsContent(
                             )
                         },
                         onRescheduleClick = { appointmentId, appointment ->
+                            appointmentOperationEvent(AppointmentOperationEvents.FetchReScheduleAppointmentDoctor(appointment.doctor.doctorId))
                             bottomSheetContent =
                                 AppointmentBottomSheetContent.ReScheduleAppointment(
                                     appointmentId = appointmentId,
@@ -414,13 +414,14 @@ fun MyAppointmentsContent(
                             state = state,
                             appointment = content.appointmentDetails,
                             events = appointmentOperationEvent,
-                            onReScheduleRequest = { newDate, newTime ->
+                            onReScheduleRequest = { newDate, newTime, newDoctor ->
                                 appointmentOperationEvent(
                                     AppointmentOperationEvents.ReScheduleAppointment(
                                         appointmentId = content.appointmentId,
                                         newDate = newDate,
                                         newTime = newTime,
-                                        newStatus = content.newStatus
+                                        newStatus = content.newStatus,
+                                        newDoctor = newDoctor
                                     )
                                 )
                                 appointmentOperationEvent(AppointmentOperationEvents.ClearReScheduledAppointment)

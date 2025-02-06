@@ -2,12 +2,14 @@ package com.example.medeaseclient.data.repository.allFeatures
 
 import arrow.core.Either
 import com.example.medeaseclient.domain.model.AppointmentDetails
+import com.example.medeaseclient.domain.model.Doctor
 import kotlinx.coroutines.flow.Flow
 
 interface ClientAllFeaturesRepository {
     suspend fun fetchHospitalAppointments(hospitalId: String): Flow<Either<ClientAllFeaturesFailure, List<AppointmentDetails>>>
     suspend fun changeAppointmentStatus(appointmentId: String, newStatus: String): Either<ClientAllFeaturesFailure, ClientAllFeaturesSuccess>
-    suspend fun reScheduleAppointment(appointmentId: String, newDate: String, newTime: String, newStatus: String): Either<ClientAllFeaturesFailure, ClientAllFeaturesSuccess>
+    suspend fun fetchReScheduleAppointmentDoctor(doctorId: String): Either<ClientAllFeaturesFailure, Doctor>
+    suspend fun reScheduleAppointment(appointmentId: String, newDate: String, newTime: String, newStatus: String, newDoctor: Doctor): Either<ClientAllFeaturesFailure, ClientAllFeaturesSuccess>
     suspend fun markCompletedAppointment(appointmentId: String, healthRemark: String, userId: String, newStatus: String): Either<ClientAllFeaturesFailure, ClientAllFeaturesSuccess>
 }
 

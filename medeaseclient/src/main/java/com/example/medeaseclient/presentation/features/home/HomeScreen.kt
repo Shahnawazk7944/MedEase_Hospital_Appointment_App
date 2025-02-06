@@ -7,7 +7,9 @@ import android.icu.text.SimpleDateFormat
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,11 +24,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -48,7 +50,6 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -62,10 +63,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -73,11 +73,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.designsystem.components.OutlinedDateInputField
 import com.example.designsystem.components.OutlinedInputField
-import com.example.designsystem.components.OutlinedTimeInputField
 import com.example.designsystem.components.PrimaryButton
 import com.example.designsystem.theme.MedEaseTheme
 import com.example.designsystem.theme.spacing
 import com.example.medeaseclient.domain.model.AppointmentDetails
+import com.example.medeaseclient.domain.model.Doctor
+import com.example.medeaseclient.domain.model.Slot
 import com.example.medeaseclient.presentation.features.common.CustomTopBar
 import com.example.medeaseclient.presentation.features.common.HomeHeadings
 import com.example.medeaseclient.presentation.features.common.LoadingDialog
@@ -90,9 +91,8 @@ import com.example.medeaseclient.presentation.features.home.viewmodels.events.Ap
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.AppointmentOperationsStates
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeEvents
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeStates
-import java.util.Locale
-import java.text.DateFormat
 import java.util.Date
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
@@ -253,10 +253,10 @@ fun HomeContent(
         val sheetState = rememberModalBottomSheetState()
         var bottomSheetContent by remember { mutableStateOf<AppointmentBottomSheetContent?>(null) }
         val todayDate by remember {
-            val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy",Locale.getDefault())
+            val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
             val formattedDate = simpleDateFormat.format(Date())
             derivedStateOf {
-              formattedDate
+                formattedDate
             }
         }
         LazyColumn(
@@ -353,6 +353,11 @@ fun HomeContent(
                             )
                         },
                         onRescheduleClick = { appointmentId, appointment ->
+                            appointmentEvent(
+                                AppointmentOperationEvents.FetchReScheduleAppointmentDoctor(
+                                    appointment.doctor.doctorId
+                                )
+                            )
                             bottomSheetContent =
                                 AppointmentBottomSheetContent.ReScheduleAppointment(
                                     appointmentId = appointmentId,
@@ -379,7 +384,6 @@ fun HomeContent(
                     )
                 }
             }
-
 
 
         }
@@ -420,13 +424,14 @@ fun HomeContent(
                             state = state,
                             appointment = content.appointmentDetails,
                             events = appointmentEvent,
-                            onReScheduleRequest = { newDate, newTime ->
+                            onReScheduleRequest = { newDate, newTime, newDoctor ->
                                 appointmentEvent(
                                     AppointmentOperationEvents.ReScheduleAppointment(
                                         appointmentId = content.appointmentId,
                                         newDate = newDate,
                                         newTime = newTime,
-                                        newStatus = content.newStatus
+                                        newStatus = content.newStatus,
+                                        newDoctor = newDoctor
                                     )
                                 )
                                 appointmentEvent(AppointmentOperationEvents.ClearReScheduledAppointment)
@@ -515,7 +520,7 @@ fun ReScheduleAppointmentBottomSheetContent(
     state: AppointmentOperationsStates,
     appointment: AppointmentDetails,
     events: (AppointmentOperationEvents) -> Unit,
-    onReScheduleRequest: (newDate: String, newTime: String) -> Unit,
+    onReScheduleRequest: (newDate: String, newTime: String, newDoctor: Doctor) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -565,76 +570,106 @@ fun ReScheduleAppointmentBottomSheetContent(
                 )
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    OutlinedDateInputField(
-                        date = state.newAppointmentDate,
-                        onDateChange = {
-                            events(
-                                AppointmentOperationEvents.ChangeNewAppointmentDate(
-                                    newDate = it,
-                                    fromDate = appointment.doctor.availabilityFrom,
-                                    toDate = appointment.doctor.availabilityTo
-                                )
+                OutlinedDateInputField(
+                    date = state.newAppointmentDate,
+                    onDateChange = {
+                        events(
+                            AppointmentOperationEvents.ChangeNewAppointmentDate(
+                                newDate = it,
+                                fromDate = appointment.doctor.availabilityFrom,
+                                toDate = appointment.doctor.availabilityTo
                             )
-                        },
-                        label = "New Date",
+                        )
+                    },
+                    label = "New Date",
+                    placeholder = {
+                        Text(
+                            text = "20-01-2024",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = "Calendar icon",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    error = state.newAppointmentDateError,
+                )
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                if (state.newAppointmentDate.isNotEmpty() && state.newAppointmentDateError == null) {
+                    OutlinedInputField(
+                        value = state.newAppointmentTime,
+                        onChange = {},
+                        readOnly = true,
+                        label = "Time",
                         placeholder = {
                             Text(
-                                text = "20-01-2024",
+                                text = "01:00 - 1:30",
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                         },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.CalendarMonth,
+                                imageVector = Icons.Default.AccessTime,
                                 contentDescription = "Calendar icon",
                                 modifier = Modifier.size(20.dp)
                             )
                         },
-                        error = state.newAppointmentDateError,
-                    )
-                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
-                    OutlinedTimeInputField(
-                        time = state.newAppointmentTime,
-                        onTimeChange = {
-                            events(
-                                AppointmentOperationEvents.ChangeNewAppointmentTime(
-                                    it
-                                )
-                            )
-                        },
-                        label = "New Time",
-                        placeholder = {
-                            Text(
-                                text = "12:30 PM",
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                        },
-                        modifier = Modifier.weight(1f),
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.AccessTime,
-                                contentDescription = "Watch icon",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        },
                         error = state.newAppointmentTimeError,
+                    )
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+                    AvailableSlotsSection(
+                        doctor = state.rescheduleAppointmentDoctor,
+                        selectedDate = state.newAppointmentDate,
+                        onSlotSelected = { selectedSlot ->
+                            events(AppointmentOperationEvents.ChangeNewAppointmentTime(selectedSlot.time))
+                        }
                     )
                 }
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
                 PrimaryButton(
                     onClick = {
+                        val doctor = state.rescheduleAppointmentDoctor.copy()
+                        val oldDate = appointment.bookingDate
+                        val oldTime = appointment.bookingTime
+                        val newDate = state.newAppointmentDate
+                        val newTime = state.newAppointmentTime
+                        doctor.availabilitySlots[oldDate]?.let { slots ->
+                            val updatedSlots = slots.map {
+                                if (it.time == oldTime) it.copy(available = true) else it
+                            }
+                            doctor.availabilitySlots = doctor.availabilitySlots.toMutableMap().apply {
+                                put(oldDate, updatedSlots)
+                            }
+                        }
+
+                        doctor.availabilitySlots[newDate]?.let { slots ->
+                            val updatedSlots = slots.map {
+                                if (it.time == newTime) it.copy(available = false) else it
+                            }
+                            doctor.availabilitySlots = doctor.availabilitySlots.toMutableMap().apply {
+                                put(newDate, updatedSlots)
+                            }
+                        }
+
+                        Log.d(
+                            "----old",
+                            "${doctor.availabilitySlots[oldDate]?.find { it.time == oldTime }?.available}"
+                        )
+                        Log.d(
+                            "----new",
+                            "${doctor.availabilitySlots[newDate]?.find { it.time == newTime }?.available}"
+                        )
+
                         onReScheduleRequest.invoke(
                             state.newAppointmentDate,
-                            state.newAppointmentTime
+                            state.newAppointmentTime,
+                            doctor
                         )
                     },
                     shape = RoundedCornerShape(MaterialTheme.spacing.large),
@@ -642,8 +677,10 @@ fun ReScheduleAppointmentBottomSheetContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.End),
-                    enabled = !(state.newAppointmentDateError != null || state.newAppointmentTimeError != null || state.newAppointmentDate.isBlank() || state.newAppointmentTime.isBlank())
+                    enabled = !(state.newAppointmentDateError != null || state.newAppointmentTimeError != null ||
+                            state.newAppointmentDate.isBlank() || state.newAppointmentTime.isBlank())
                 )
+
 
             }
         }
@@ -651,46 +688,68 @@ fun ReScheduleAppointmentBottomSheetContent(
 }
 
 @Composable
-fun MedicalOptionItem(
-    label: String,
-    icon: ImageVector,
-    onClick: () -> Unit
+fun AvailableSlotsSection(
+    doctor: Doctor,
+    selectedDate: String,
+    onSlotSelected: (Slot) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(MaterialTheme.spacing.medium),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center
-        ) {
-            Surface(
-                onClick = onClick,
-                modifier = Modifier.size(60.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
-                contentColor = MaterialTheme.colorScheme.onSecondary,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = label,
-                    tint = MaterialTheme.colorScheme.onSecondary,
-                    modifier = Modifier
-                        .padding(MaterialTheme.spacing.medium)
-                        .fillMaxSize()
-                )
+    val availableSlots = remember(selectedDate) {
+        doctor.availabilitySlots[selectedDate] ?: emptyList<Slot>()
+    }
+
+    Column {
+        if (availableSlots.isEmpty()) {
+            Text(
+                text = "No slots available for the selected day",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(16.dp)
+            )
+        } else {
+            val rows = availableSlots.chunked(16)
+
+            rows.forEach { rowSlots ->
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(rowSlots) { slot ->
+                        SlotItem(
+                            slot = slot,
+                            onClick = { onSlotSelected(slot) }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
+    }
+}
+
+@Composable
+fun SlotItem(slot: Slot, onClick: () -> Unit) {
+    val isDisabled = !slot.available
+
+    Box(
+        modifier = Modifier
+            .width(100.dp)
+            .height(40.dp)
+            .background(
+                if (isDisabled) Color.Gray else MaterialTheme.colorScheme.onBackground,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .border(
+                width = 1.dp,
+                color = if (isDisabled) Color.Gray else MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .clickable(enabled = !isDisabled) { onClick() }
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
+    ) {
         Text(
-            text = label,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSecondary,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            text = slot.time,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (isDisabled) Color.White else MaterialTheme.colorScheme.primary
         )
     }
 }

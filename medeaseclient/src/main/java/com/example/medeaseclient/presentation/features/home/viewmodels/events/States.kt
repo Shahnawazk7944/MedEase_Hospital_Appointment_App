@@ -7,6 +7,7 @@ import com.example.medeaseclient.data.repository.home.ClientProfileFailure
 import com.example.medeaseclient.data.repository.home.LogoutFailure
 import com.example.medeaseclient.domain.model.AppointmentDetails
 import com.example.medeaseclient.domain.model.ClientProfile
+import com.example.medeaseclient.domain.model.Doctor
 
 data class HomeStates(
     val loading: Boolean = false,
@@ -27,7 +28,8 @@ data class HomeStates(
     override val newAppointmentDate: String = "",
     override val newAppointmentDateError: String? = null,
     override val newAppointmentTime: String = "",
-    override val newAppointmentTimeError: String? = null
+    override val newAppointmentTimeError: String? = null,
+    override val rescheduleAppointmentDoctor: Doctor = Doctor()
 ) : AppointmentOperationsStates
 
 
@@ -38,5 +40,6 @@ interface AppointmentOperationsStates {
     val newAppointmentDateError: String?
     val newAppointmentTime: String
     val newAppointmentTimeError: String?
+    val rescheduleAppointmentDoctor: Doctor
 }
 

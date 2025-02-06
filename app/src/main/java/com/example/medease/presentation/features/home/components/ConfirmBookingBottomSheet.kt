@@ -268,7 +268,7 @@ fun BookingConformationBottomSheet(
                             label = "Time",
                             placeholder = {
                                 Text(
-                                    text = "12:30 PM",
+                                    text = "01:00 - 1:30",
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
                             },

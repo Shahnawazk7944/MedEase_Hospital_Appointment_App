@@ -7,6 +7,7 @@ import com.example.medeaseclient.data.repository.allFeatures.ClientAllFeaturesRe
 import com.example.medeaseclient.data.repository.auth.ClientDataStoreRepository
 import com.example.medeaseclient.data.repository.home.ClientHomeRepository
 import com.example.medeaseclient.data.util.Validator
+import com.example.medeaseclient.domain.model.Doctor
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.AppointmentOperationEvents
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeEvents
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.HomeStates
@@ -125,7 +126,8 @@ class HomeViewModel @Inject constructor(
                     appointmentId = event.appointmentId,
                     newDate = event.newDate,
                     newTime = event.newTime,
-                    newStatus = event.newStatus
+                    newStatus = event.newStatus,
+                    newDoctor = event.newDoctor
                 )
             }
 
@@ -151,6 +153,10 @@ class HomeViewModel @Inject constructor(
                         newAppointmentTimeError = null
                     )
                 }
+            }
+
+            is AppointmentOperationEvents.FetchReScheduleAppointmentDoctor -> {
+                fetchReScheduleAppointmentDoctor(event.doctorId)
             }
         }
     }
@@ -217,7 +223,21 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+    private fun fetchReScheduleAppointmentDoctor(doctorId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            clientAllFeaturesRepository.fetchReScheduleAppointmentDoctor(doctorId)
+                .onRight { doctor ->
+                    _homeState.update { it.copy(rescheduleAppointmentDoctor = doctor) }
+                }.onLeft { failure ->
+                    _homeState.update {
+                        it.copy(
+                            appointmentsFailure = failure
+                        )
+                    }
+                }
 
+        }
+    }
     private fun changeAppointmentStatus(appointmentId: String, newStatus: String) {
         _homeState.update { it.copy(loading = true) }
         viewModelScope.launch(Dispatchers.IO) {
@@ -248,7 +268,8 @@ class HomeViewModel @Inject constructor(
         appointmentId: String,
         newDate: String,
         newTime: String,
-        newStatus: String
+        newStatus: String,
+        newDoctor: Doctor
     ) {
         _homeState.update { it.copy(loading = true) }
         viewModelScope.launch(Dispatchers.IO) {
@@ -256,7 +277,8 @@ class HomeViewModel @Inject constructor(
                 appointmentId = appointmentId,
                 newDate = newDate,
                 newTime = newTime,
-                newStatus = newStatus
+                newStatus = newStatus,
+                newDoctor = newDoctor
             )
                 .onRight { success ->
                     _homeState.update {

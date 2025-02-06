@@ -7,6 +7,7 @@ import com.example.medeaseclient.data.repository.allFeatures.ClientAllFeaturesRe
 import com.example.medeaseclient.data.repository.allFeatures.ClientAllFeaturesSuccess
 import com.example.medeaseclient.data.util.Validator
 import com.example.medeaseclient.domain.model.AppointmentDetails
+import com.example.medeaseclient.domain.model.Doctor
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.AppointmentOperationEvents
 import com.example.medeaseclient.presentation.features.home.viewmodels.events.AppointmentOperationsStates
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,7 +32,8 @@ data class MyAppointmentsStates(
     override val newAppointmentDate: String = "",
     override val newAppointmentDateError: String? = null,
     override val newAppointmentTime: String = "",
-    override val newAppointmentTimeError: String? = null
+    override val newAppointmentTimeError: String? = null,
+    override val rescheduleAppointmentDoctor: Doctor = Doctor()
 ) : AppointmentOperationsStates
 
 sealed class MyAppointmentsEvents {
@@ -119,7 +121,8 @@ class MyAppointmentsViewModel @Inject constructor(
                     appointmentId = event.appointmentId,
                     newDate = event.newDate,
                     newTime = event.newTime,
-                    newStatus = event.newStatus
+                    newStatus = event.newStatus,
+                    newDoctor = event.newDoctor
                 )
             }
 
@@ -155,6 +158,10 @@ class MyAppointmentsViewModel @Inject constructor(
                     )
                 }
             }
+
+            is AppointmentOperationEvents.FetchReScheduleAppointmentDoctor -> {
+                fetchReScheduleAppointmentDoctor(event.doctorId)
+            }
         }
     }
 
@@ -173,6 +180,22 @@ class MyAppointmentsViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    private fun fetchReScheduleAppointmentDoctor(doctorId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.fetchReScheduleAppointmentDoctor(doctorId)
+                .onRight { doctor ->
+                    _state.update { it.copy(rescheduleAppointmentDoctor = doctor) }
+                }.onLeft { failure ->
+                    _state.update {
+                        it.copy(
+                            failure = failure
+                        )
+                    }
+                }
+
         }
     }
 
@@ -206,7 +229,8 @@ class MyAppointmentsViewModel @Inject constructor(
         appointmentId: String,
         newDate: String,
         newTime: String,
-        newStatus: String
+        newStatus: String,
+        newDoctor: Doctor
     ) {
         _state.update { it.copy(loading = true) }
         viewModelScope.launch(Dispatchers.IO) {
@@ -214,7 +238,8 @@ class MyAppointmentsViewModel @Inject constructor(
                 appointmentId = appointmentId,
                 newDate = newDate,
                 newTime = newTime,
-                newStatus = newStatus
+                newStatus = newStatus,
+                newDoctor = newDoctor
             )
                 .onRight { success ->
                     _state.update {
